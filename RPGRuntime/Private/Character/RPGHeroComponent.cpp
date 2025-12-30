@@ -239,8 +239,15 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 					}
 				}
 
+				if (PlayerInputComponent)
+				{
+					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: InputComponent class is %s"), *GetNameSafe(PlayerInputComponent->GetClass()));
+				}
+
 				URPGInputComponent* RPGIC = Cast<URPGInputComponent>(PlayerInputComponent);
-				if (ensureMsgf(RPGIC, TEXT("Unexpected Input Component class!")))
+				UEnhancedInputComponent* EnhancedIC = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+
+				if (RPGIC)
 				{
 					// Add the key mappings
 					RPGIC->AddInputMappings(InputConfig, Subsystem);
@@ -253,6 +260,42 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_LookStick, /*bLogIfNotFound=*/ false);
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ false);
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_AutoRun, ETriggerEvent::Triggered, this, &ThisClass::Input_AutoRun, /*bLogIfNotFound=*/ false);
+				}
+				else if (EnhancedIC)
+				{
+					UE_LOG(LogRPG, Warning, TEXT("InitializePlayerInput: InputComponent is NOT URPGInputComponent (it is %s), using resilient fallback binding."), *GetNameSafe(PlayerInputComponent->GetClass()));
+
+					// Manual binding for any EnhancedInputComponent (handles LyraInputComponent too)
+					for (const FRPGInputAction& Action : InputConfig->AbilityInputActions)
+					{
+						if (Action.InputAction && Action.InputTag.IsValid())
+						{
+							EnhancedIC->BindAction(Action.InputAction, ETriggerEvent::Triggered, this, &ThisClass::Input_AbilityInputTagPressed, Action.InputTag);
+							EnhancedIC->BindAction(Action.InputAction, ETriggerEvent::Completed, this, &ThisClass::Input_AbilityInputTagReleased, Action.InputTag);
+						}
+					}
+
+					auto BindNative = [&](const FGameplayTag& Tag, auto Func)
+					{
+						if (const UInputAction* IA = InputConfig->FindNativeInputActionForTag(Tag, /*bLogNotFound=*/ false))
+						{
+							EnhancedIC->BindAction(IA, ETriggerEvent::Triggered, this, Func);
+						}
+						else
+						{
+							UE_LOG(LogRPG, Warning, TEXT("InitializePlayerInput: Skipping binding for Tag [%s] - Not found in InputConfig [%s]. This is an Asset configuration issue, not a code defect."), *Tag.ToString(), *GetNameSafe(InputConfig));
+						}
+					};
+
+					BindNative(RPGGameplayTags::InputTag_Move, &ThisClass::Input_Move);
+					BindNative(RPGGameplayTags::InputTag_Look_Mouse, &ThisClass::Input_LookMouse);
+					BindNative(RPGGameplayTags::InputTag_Look_Stick, &ThisClass::Input_LookStick);
+					BindNative(RPGGameplayTags::InputTag_Crouch, &ThisClass::Input_Crouch);
+					BindNative(RPGGameplayTags::InputTag_AutoRun, &ThisClass::Input_AutoRun);
+				}
+				else
+				{
+					UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: Unexpected Input Component class %s! Cannot bind inputs."), *GetNameSafe(PlayerInputComponent->GetClass()));
 				}
 			}
 		}
@@ -392,7 +435,7 @@ void URPGHeroComponent::Input_LookMouse(const FInputActionValue& InputActionValu
 
 	if (Value.Y != 0.0f)
 	{
-		Pawn->AddControllerPitchInput(Value.Y);
+		Pawn->AddControllerPitchInput(Value.Y * -1.0f);
 	}
 }
 

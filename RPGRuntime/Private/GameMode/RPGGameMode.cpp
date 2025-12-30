@@ -129,6 +129,7 @@ void ARPGGameMode::HandleMatchAssignmentIfNotExpectingOne()
 	{
 		ExperienceId = FPrimaryAssetId(FPrimaryAssetType("RPGExperienceDefinition"), FName("B_RPGDefaultExperience"));
 		ExperienceIdSource = TEXT("Default");
+		UE_LOG(LogRPGExperience, Warning, TEXT("EXPERIENCE: No experience found in URL or World Settings. Falling back to default: %s"), *ExperienceId.ToString());
 	}
 
 	OnMatchAssignmentGiven(ExperienceId, ExperienceIdSource);

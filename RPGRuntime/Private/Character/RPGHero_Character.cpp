@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Character/RPGHero_Character.h"
+#include "Character/RPGHeroComponent.h"
 #include "Animation/AnimMontage.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/RPGEquipmentManagerComponent.h"
@@ -15,6 +16,7 @@
 ARPGHero_Character::ARPGHero_Character(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	HeroComponent = CreateDefaultSubobject<URPGHeroComponent>(TEXT("HeroComponent"));
 }
 
 void ARPGHero_Character::OnDeathStarted(AActor* OwningActor)

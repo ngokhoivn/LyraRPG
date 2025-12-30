@@ -23,6 +23,13 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Greatsword")
     float BlockEffectiveness = 0.7f;
 
+    // Base animation layers (to be set in Editor)
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+    TSoftClassPtr<UAnimInstance> EquippedAnimLayerSoft;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+    TSoftClassPtr<UAnimInstance> UnequippedAnimLayerSoft;
+
     // Override animation layer selection
     virtual TSubclassOf<UAnimInstance> PickBestAnimLayer_Implementation(bool bEquip, const FGameplayTagContainer& InCosmeticTags) override;
 };

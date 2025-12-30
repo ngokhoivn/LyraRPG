@@ -25,6 +25,13 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Axe")
     float AttackSpeed = 1.1f;
 
+    // Base animation layers (to be set in Editor)
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+    TSoftClassPtr<UAnimInstance> EquippedAnimLayerSoft;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+    TSoftClassPtr<UAnimInstance> UnequippedAnimLayerSoft;
+
     // Override animation layer selection
     virtual TSubclassOf<UAnimInstance> PickBestAnimLayer_Implementation(bool bEquip, const FGameplayTagContainer& InCosmeticTags) override;
 };

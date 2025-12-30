@@ -9,6 +9,8 @@
 #include "AbilitySystemGlobals.h"
 #include "GameFramework/Pawn.h"
 #include "Net/UnrealNetwork.h"
+#include "Input/RPGInputComponent.h"
+
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RPGPlayerController)
 
@@ -20,6 +22,21 @@ ARPGPlayerController::ARPGPlayerController(const FObjectInitializer& ObjectIniti
 void ARPGPlayerController::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
+}
+
+void ARPGPlayerController::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// Force correct InputComponent class before anything else uses it
+	if (IsLocalPlayerController())
+	{
+		if (InputComponent == nullptr || !InputComponent->IsA<URPGInputComponent>())
+		{
+			InputComponent = NewObject<URPGInputComponent>(this, TEXT("InputComponent0"));
+			InputComponent->RegisterComponent();
+		}
+	}
 }
 
 void ARPGPlayerController::BeginPlay()
@@ -140,6 +157,15 @@ void ARPGPlayerController::PostProcessInput(const float DeltaTime, const bool bG
 	}
 
 	Super::PostProcessInput(DeltaTime, bGamePaused);
+}
+
+void ARPGPlayerController::SetupInputComponent()
+{
+	if (InputComponent == nullptr || !InputComponent->IsA<URPGInputComponent>())
+	{
+		InputComponent = NewObject<URPGInputComponent>(this, TEXT("InputComponent0"));
+		InputComponent->RegisterComponent();
+	}
 }
 
 void ARPGPlayerController::OnCameraPenetratingTarget()

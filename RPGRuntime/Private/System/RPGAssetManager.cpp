@@ -5,6 +5,8 @@
 #include "System/RPGGameplayTags.h"
 #include "System/RPGGameData.h"
 #include "Character/RPGPawnData.h"
+#include "GameMode/RPGExperienceDefinition.h"
+#include "GameMode/RPGExperienceActionSet.h"
 #include "AbilitySystemGlobals.h"
 #include "Misc/App.h"
 #include "Stats/StatsMisc.h"
@@ -32,7 +34,6 @@ static FAutoConsoleCommand CVarDumpRPGAssets(
 
 URPGAssetManager::URPGAssetManager()
 {
-	DefaultPawnData = nullptr;
 }
 
 URPGAssetManager& URPGAssetManager::Get()
@@ -49,59 +50,30 @@ URPGAssetManager& URPGAssetManager::Get()
 	return *NewObject<URPGAssetManager>();
 }
 
-UObject* URPGAssetManager::SynchronousLoadAsset(const FSoftObjectPath& AssetPath)
-{
-	if (AssetPath.IsValid())
-	{
-		TUniquePtr<FScopeLogTime> LogTimePtr;
-
-		if (ShouldLogAssetLoads())
-		{
-			LogTimePtr = MakeUnique<FScopeLogTime>(*FString::Printf(TEXT("Synchronously loaded asset [%s]"), *AssetPath.ToString()), nullptr, FScopeLogTime::ScopeLog_Seconds);
-		}
-
-		if (UAssetManager::IsInitialized())
-		{
-			return UAssetManager::GetStreamableManager().LoadSynchronous(AssetPath, false);
-		}
-
-		return AssetPath.TryLoad();
-	}
-
-	return nullptr;
-}
-
-bool URPGAssetManager::ShouldLogAssetLoads()
-{
-	static bool bLogAssetLoads = FParse::Param(FCommandLine::Get(), TEXT("LogAssetLoads"));
-	return bLogAssetLoads;
-}
-
-void URPGAssetManager::AddLoadedAsset(const UObject* Asset)
-{
-	if (ensureAlways(Asset))
-	{
-		FScopeLock LoadedAssetsLock(&LoadedAssetsCritical);
-		LoadedAssets.Add(Asset);
-	}
-}
-
 void URPGAssetManager::DumpLoadedAssets()
 {
 	UE_LOG(LogRPG, Log, TEXT("========== Start Dumping Loaded RPG Assets =========="));
 
-	for (const UObject* LoadedAsset : Get().LoadedAssets)
-	{
-		UE_LOG(LogRPG, Log, TEXT("  %s"), *GetNameSafe(LoadedAsset));
-	}
+	// LoadedAssets is private in ULyraAssetManager and cannot be accessed here.
+	// We could implement a tracked list in RPGAssetManager if needed, or call Super if it existed.
+	UE_LOG(LogRPG, Log, TEXT("  (Asset tracking dump not available in specialized RPGAssetManager)"));
 
-	UE_LOG(LogRPG, Log, TEXT("... %d assets in loaded pool"), Get().LoadedAssets.Num());
 	UE_LOG(LogRPG, Log, TEXT("========== Finish Dumping Loaded RPG Assets =========="));
 }
 
 void URPGAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
+
+	// Register RPG specific Primary Asset Types
+	// Many of these could also be configured in DefaultGame.ini, 
+	// but adding them here ensures they are always scanned.
+	
+	// RPG Experience Definitions
+	PrimaryAssetTypesToScan.Add(FPrimaryAssetTypeInfo(TEXT("RPGExperienceDefinition"), URPGExperienceDefinition::StaticClass(), FPrimaryAssetId::InvalidPrimaryAssetId, true, true));
+
+	// RPG Experience Action Sets
+	PrimaryAssetTypesToScan.Add(FPrimaryAssetTypeInfo(TEXT("RPGExperienceActionSet"), URPGExperienceActionSet::StaticClass(), FPrimaryAssetId::InvalidPrimaryAssetId, true, true));
 
 	// Initialize Native Tags
 	STARTUP_JOB(FRPGGameplayTags::InitializeNativeTags());
@@ -116,12 +88,18 @@ void URPGAssetManager::StartInitialLoading()
 
 const URPGGameData& URPGAssetManager::GetGameData()
 {
+	// RPGGameDataPath is already defined in LyraAssetManager as LyraGameDataPath or similar?
+	// Actually, ULyraAssetManager likely has LyraGameDataPath.
+	// If it doesn't have RPGGameDataPath, then RPGAssetManager.h should have kept it BUT renamed it if there's a conflict.
+	// But the error didn't mention RPGGameDataPath conflict, only GameDataMap, DefaultPawnData, and LoadedAssets.
+	// So RPGGameDataPath is fine.
+	
 	return GetOrLoadTypedGameData<URPGGameData>(RPGGameDataPath);
 }
 
 const URPGPawnData* URPGAssetManager::GetDefaultPawnData() const
 {
-	return GetAsset(DefaultPawnData);
+	return GetAsset(RPGDefaultPawnData);
 }
 
 UPrimaryDataAsset* URPGAssetManager::LoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType)

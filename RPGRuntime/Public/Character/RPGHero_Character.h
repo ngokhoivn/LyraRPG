@@ -8,6 +8,7 @@
 
 class UAnimMontage;
 class USceneComponent;
+class URPGHeroComponent;
 
 /**
  * ARPGHero_Character
@@ -59,4 +60,8 @@ protected:
 
 	/** Hides all equipped weapons */
 	void HideEquippedWeapons();
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RPG|Hero", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<URPGHeroComponent> HeroComponent;
 };

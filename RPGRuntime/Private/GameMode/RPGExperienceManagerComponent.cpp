@@ -47,12 +47,26 @@ void URPGExperienceManagerComponent::SetCurrentExperience(FPrimaryAssetId Experi
 {
 	URPGAssetManager& AssetManager = URPGAssetManager::Get();
 	FSoftObjectPath AssetPath = AssetManager.GetPrimaryAssetPath(ExperienceId);
-	TSubclassOf<URPGExperienceDefinition> AssetClass = Cast<UClass>(AssetPath.TryLoad());
-	ensureMsgf(AssetClass, TEXT("Failed to load Experience definition %s"), *ExperienceId.ToString());
 	
-	const URPGExperienceDefinition* Experience = GetDefault<URPGExperienceDefinition>(AssetClass);
+	const URPGExperienceDefinition* Experience = nullptr;
 
-	check(Experience != nullptr);
+	// Try loading as a Data Asset instance first
+	if (URPGExperienceDefinition* ExperienceAsset = Cast<URPGExperienceDefinition>(AssetPath.TryLoad()))
+	{
+		Experience = ExperienceAsset;
+	}
+	else if (TSubclassOf<URPGExperienceDefinition> AssetClass = Cast<UClass>(AssetPath.TryLoad()))
+	{
+		// Fallback to Blueprint class CDO if it's a BP-based experience
+		Experience = GetDefault<URPGExperienceDefinition>(AssetClass);
+	}
+
+	if (Experience == nullptr)
+	{
+		UE_LOG(LogRPGExperience, Error, TEXT("EXPERIENCE: Failed to load Experience definition %s from path %s. Check your Asset Manager settings and ensure the asset exists."), *ExperienceId.ToString(), *AssetPath.ToString());
+		return;
+	}
+	
 	check(CurrentExperience == nullptr);
 	CurrentExperience = Experience;
 	StartExperienceLoad();

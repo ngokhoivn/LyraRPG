@@ -29,7 +29,10 @@ public class RPGRuntime : ModuleRules
 			"GameplayMessageRuntime",
 			"EnhancedInput",
 			"AIModule",
-			"CommonLoadingScreen"
+			"CommonLoadingScreen",
+
+			// Lyra Core (Cho phép RPGAssetManager kế thừa từ LyraAssetManager)
+			"LyraGame"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

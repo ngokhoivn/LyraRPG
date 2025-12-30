@@ -44,6 +44,7 @@ public:
 
 	//~AActor interface
 	virtual void PreInitializeComponents() override;
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -64,6 +65,7 @@ public:
 	virtual void UpdateHiddenComponents(const FVector& ViewLocation, TSet<FPrimitiveComponentId>& OutHiddenComponents) override;
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
+	virtual void SetupInputComponent() override;
 	//~End of APlayerController interface
 
 	//~IRPGCameraAssistInterface interface

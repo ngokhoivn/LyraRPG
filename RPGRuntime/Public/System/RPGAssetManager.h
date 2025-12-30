@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "Engine/AssetManager.h"
+#include "System/LyraAssetManager.h"
+#include "System/RPGLogChannels.h"
 #include "System/RPGAssetManagerStartupJob.h"
 #include "Templates/SubclassOf.h"
 #include "RPGAssetManager.generated.h"
@@ -19,10 +20,11 @@ struct FRPGBundles
 /**
  * URPGAssetManager
  *
- * Standalone version of LyraAssetManager for the RPG plugin.
+ * Specialized version of LyraAssetManager for the RPG plugin.
+ * Inherits from ULyraAssetManager to maintain compatibility with Lyra's Game Feature Actions.
  */
 UCLASS(Config = Game)
-class RPGRUNTIME_API URPGAssetManager : public UAssetManager
+class RPGRUNTIME_API URPGAssetManager : public ULyraAssetManager
 {
 	GENERATED_BODY()
 
@@ -57,14 +59,17 @@ protected:
 		}
 
 		// Does a blocking load if needed
-		return *CastChecked<const GameDataClass>(LoadGameDataOfClass(GameDataClass::StaticClass(), DataPath, GameDataClass::StaticClass()->GetFName()));
+		UPrimaryDataAsset* LoadedAsset = LoadGameDataOfClass(GameDataClass::StaticClass(), DataPath, GameDataClass::StaticClass()->GetFName());
+		if (LoadedAsset == nullptr)
+		{
+			UE_LOG(LogRPG, Error, TEXT("RPGGameData is missing! The Editor will continue but features may not work. Please create a Data Asset of type RPGGameData and configure its path in DefaultGame.ini: [/Script/RPGRuntime.RPGAssetManager] RPGGameDataPath=\"/Path/To/Asset\""));
+			
+			// Return a dummy object to prevent the reference crash during startup
+			return *GetMutableDefault<GameDataClass>();
+		}
+
+		return *CastChecked<const GameDataClass>(LoadedAsset);
 	}
-
-	static UObject* SynchronousLoadAsset(const FSoftObjectPath& AssetPath);
-	static bool ShouldLogAssetLoads();
-
-	// Thread safe way of adding a loaded asset to keep in memory.
-	void AddLoadedAsset(const UObject* Asset);
 
 	//~UAssetManager interface
 	virtual void StartInitialLoading() override;
@@ -76,18 +81,13 @@ protected:
 	UPrimaryDataAsset* LoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType);
 
 protected:
-
-	// Global game data asset to use.
+	// Global game data asset to use for the RPG plugin.
 	UPROPERTY(Config)
 	TSoftObjectPtr<URPGGameData> RPGGameDataPath;
 
-	// Loaded version of the game data
-	UPROPERTY(Transient)
-	TMap<TObjectPtr<UClass>, TObjectPtr<UPrimaryDataAsset>> GameDataMap;
-
 	// Pawn data used when spawning player pawns if there isn't one set on the player state.
 	UPROPERTY(Config)
-	TSoftObjectPtr<URPGPawnData> DefaultPawnData;
+	TSoftObjectPtr<URPGPawnData> RPGDefaultPawnData;
 
 private:
 	// Flushes the StartupJobs array. Processes all startup work.
@@ -98,15 +98,6 @@ private:
 
 	// The list of tasks to execute on startup. Used to track startup progress.
 	TArray<FRPGAssetManagerStartupJob> StartupJobs;
-
-private:
-	
-	// Assets loaded and tracked by the asset manager.
-	UPROPERTY()
-	TSet<TObjectPtr<const UObject>> LoadedAssets;
-
-	// Used for a scope lock when modifying the list of load assets.
-	FCriticalSection LoadedAssetsCritical;
 };
 
 

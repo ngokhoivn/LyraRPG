@@ -7,8 +7,6 @@
 
 void FRPGRuntimeModule::StartupModule()
 {
-	// Initialize native tags
-	FRPGGameplayTags::InitializeNativeTags();
 }
 
 void FRPGRuntimeModule::ShutdownModule()
