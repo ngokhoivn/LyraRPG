@@ -15,6 +15,11 @@ URPGExperienceDefinition::URPGExperienceDefinition()
 {
 }
 
+FPrimaryAssetId URPGExperienceDefinition::GetPrimaryAssetId() const
+{
+	return FPrimaryAssetId(FPrimaryAssetType("RPGExperienceDefinition"), GetFName());
+}
+
 #if WITH_EDITOR
 EDataValidationResult URPGExperienceDefinition::IsDataValid(FDataValidationContext& Context) const
 {

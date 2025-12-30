@@ -110,6 +110,17 @@ URPGWeaponInstance* URPGEquipmentManagerComponent::GetFirstInstanceOfType(TSubcl
 	return nullptr;
 }
 
+void URPGEquipmentManagerComponent::SetAllWeaponsHidden(bool bHidden)
+{
+	for (FRPGAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		if (Entry.Instance)
+		{
+			Entry.Instance->SetActorsHidden(bHidden);
+		}
+	}
+}
+
 bool URPGEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);

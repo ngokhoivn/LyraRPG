@@ -30,6 +30,7 @@ public:
 	//~End of UObject interface
 
 	//~UPrimaryDataAsset interface
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 #if WITH_EDITORONLY_DATA
 	virtual void UpdateAssetBundleData() override;
 #endif

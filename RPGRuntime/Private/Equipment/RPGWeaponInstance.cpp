@@ -130,14 +130,25 @@ void URPGWeaponInstance::SpawnWeaponActors()
 
 void URPGWeaponInstance::DestroyWeaponActors()
 {
-    for (AActor* Actor : SpawnedActors)
-    {
-        if (Actor)
-        {
-            Actor->Destroy();
-        }
-    }
-    SpawnedActors.Empty();
+	for (AActor* Actor : SpawnedActors)
+	{
+		if (Actor)
+		{
+			Actor->Destroy();
+		}
+	}
+	SpawnedActors.Empty();
+}
+
+void URPGWeaponInstance::SetActorsHidden(bool bHidden)
+{
+	for (AActor* Actor : SpawnedActors)
+	{
+		if (Actor)
+		{
+			Actor->SetActorHiddenInGame(bHidden);
+		}
+	}
 }
 
 TSubclassOf<UAnimInstance> URPGWeaponInstance::PickBestAnimLayer_Implementation(bool bEquip, const FGameplayTagContainer& InCosmeticTags)

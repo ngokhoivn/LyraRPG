@@ -72,6 +72,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "RPG|Weapon")
     void DestroyWeaponActors();
 
+    UFUNCTION(BlueprintCallable, Category = "RPG|Weapon")
+    void SetActorsHidden(bool bHidden);
+
     // Owner Access
     UFUNCTION(BlueprintPure, Category = "RPG|Weapon")
     UObject* GetInstigator() const { return Instigator; }

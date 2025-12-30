@@ -93,6 +93,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	URPGWeaponInstance* GetFirstInstanceOfType(TSubclassOf<URPGWeaponInstance> InstanceType);
 
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+	void SetAllWeaponsHidden(bool bHidden);
+
 	// Replication
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 	virtual void ReadyForReplication() override;
