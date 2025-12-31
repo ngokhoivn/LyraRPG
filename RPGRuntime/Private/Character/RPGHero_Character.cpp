@@ -10,6 +10,12 @@
 #include "Perception/AISense_Sight.h"
 #include "TimerManager.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Inventory/RPGInventoryItemDefinition.h"
+#include "Inventory/RPGInventoryManagerComponent.h"
+#include "Inventory/RPGQuickbarComponent.h"
+#include "Character/RPGPawnExtensionComponent.h"
+#include "System/RPGGameplayTags.h"
+#include "GameFramework/Controller.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RPGHero_Character)
 
@@ -17,6 +23,17 @@ ARPGHero_Character::ARPGHero_Character(const FObjectInitializer& ObjectInitializ
 	: Super(ObjectInitializer)
 {
 	HeroComponent = CreateDefaultSubobject<URPGHeroComponent>(TEXT("HeroComponent"));
+}
+
+void ARPGHero_Character::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	// Grant initial items on the server
+	if (HasAuthority())
+	{
+		TryAddInitialInventory();
+	}
 }
 
 void ARPGHero_Character::OnDeathStarted(AActor* OwningActor)
@@ -96,4 +113,71 @@ void ARPGHero_Character::AnimMotionEffect_Implementation(const FName Bone, const
 	{
 		IRPGContextEffectsInterface::Execute_AnimMotionEffect(FootStepActor, Bone, MotionEffect, StaticMeshComponent, LocationOffset, RotationOffset, AnimationSequence, bHitSuccess, HitResult, Contexts, VFXScale, AudioVolume, AudioPitch);
 	}
+}
+
+void ARPGHero_Character::TryAddInitialInventory()
+{
+	// Guard 1: Must be server and not initialized yet
+	if (!HasAuthority() || bInventoryInitialized)
+	{
+		return;
+	}
+
+	AController* C = GetController();
+	URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(this);
+	
+	// Guard 2: Pawn Extension must be ready (Data & ASC initialized)
+	if (!PawnExtComp || !PawnExtComp->HasReachedInitState(RPGGameplayTags::InitState_GameplayReady))
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_InventoryReady, this, &ARPGHero_Character::TryAddInitialInventory, 0.1f, false);
+		return;
+	}
+
+	// Guard 3: Controller components must be added by Experience
+	if (C)
+	{
+		URPGInventoryManagerComponent* InventoryMgr = C->FindComponentByClass<URPGInventoryManagerComponent>();
+		URPGQuickbarComponent* Quickbar = C->FindComponentByClass<URPGQuickbarComponent>();
+
+		if (InventoryMgr && Quickbar)
+		{
+			AddInitialInventory(InventoryMgr, Quickbar);
+			GetWorldTimerManager().ClearTimer(TimerHandle_InventoryReady);
+			return;
+		}
+	}
+
+	// If we get here, components aren't ready yet, retry
+	GetWorldTimerManager().SetTimer(TimerHandle_InventoryReady, this, &ARPGHero_Character::TryAddInitialInventory, 0.1f, false);
+}
+
+void ARPGHero_Character::AddInitialInventory(URPGInventoryManagerComponent* InventoryMgr, URPGQuickbarComponent* Quickbar)
+{
+	check(InventoryMgr);
+	check(Quickbar);
+
+	if (bInventoryInitialized) return;
+
+	int32 SlotIndex = 0;
+	for (const TSubclassOf<URPGInventoryItemDefinition>& ItemDef : InitialInventoryItems)
+	{
+		if (ItemDef && SlotIndex < 10) // Limit to quickbar slots
+		{
+			URPGInventoryItemInstance* Instance = InventoryMgr->AddItemDefinition(ItemDef);
+			if (Instance)
+			{
+				Quickbar->AddItemToSlot(SlotIndex, Instance);
+				
+				// Auto-select the first valid item
+				if (SlotIndex == 0)
+				{
+					Quickbar->SetActiveSlotIndex(0);
+				}
+				
+				SlotIndex++;
+			}
+		}
+	}
+
+	bInventoryInitialized = true;
 }

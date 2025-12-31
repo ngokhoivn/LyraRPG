@@ -10,6 +10,7 @@
 #include "AbilitySystemGlobals.h"
 #include "Misc/App.h"
 #include "Stats/StatsMisc.h"
+#include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
 #include "Misc/ScopedSlowTask.h"
 
@@ -65,15 +66,15 @@ void URPGAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
 
-	// Register RPG specific Primary Asset Types
-	// Many of these could also be configured in DefaultGame.ini, 
-	// but adding them here ensures they are always scanned.
-	
+	// [UPDATE 2025]: Commented out C++ registration to rely on DefaultGame.ini.
+	// This avoids "is not a member" build errors after project cleanup.
+	/*
 	// RPG Experience Definitions
-	PrimaryAssetTypesToScan.Add(FPrimaryAssetTypeInfo(TEXT("RPGExperienceDefinition"), URPGExperienceDefinition::StaticClass(), FPrimaryAssetId::InvalidPrimaryAssetId, true, true));
+	this->PrimaryAssetTypesToScan.Add(FPrimaryAssetTypeInfo(TEXT("RPGExperienceDefinition"), URPGExperienceDefinition::StaticClass(), true, true));
 
 	// RPG Experience Action Sets
-	PrimaryAssetTypesToScan.Add(FPrimaryAssetTypeInfo(TEXT("RPGExperienceActionSet"), URPGExperienceActionSet::StaticClass(), FPrimaryAssetId::InvalidPrimaryAssetId, true, true));
+	this->PrimaryAssetTypesToScan.Add(FPrimaryAssetTypeInfo(TEXT("RPGExperienceActionSet"), URPGExperienceActionSet::StaticClass(), true, true));
+	*/
 
 	// Initialize Native Tags
 	STARTUP_JOB(FRPGGameplayTags::InitializeNativeTags());

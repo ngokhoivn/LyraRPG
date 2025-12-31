@@ -28,5 +28,46 @@ Tài liệu này chi tiết các lớp C++ và Interface được tạo mới ho
 ### [UPDATE] `URPGEquipmentManagerComponent`
 - Thêm hàm `SetAllWeaponsHidden(bool bHidden)`: Duyệt qua tất cả các trang bị đang được active và gọi ẩn/hiện chúng.
 
+## 4. Chi tiết Kỹ thuật Luồng Hoạt động (Technical Breakdown)
+
+### Qúa trình Tạo và Trang bị
+- **Bước 1: `InventoryManager->AddItemDefinition`**: Nhận vào `ID_Greatsword`, tạo ra một `URPGInventoryItemInstance`. Đây là nơi lưu trữ dữ liệu động (độ bền, thuộc tính riêng).
+- **Bước 2: `Quickbar->AddItemToSlot`**: Ánh xạ `Instance` vừa tạo vào một ô phím tắt (0-9).
+- **Bước 3: `EquipmentManager->EquipItem`**: Khi slot được kích hoạt, nó lấy `URPGEquipmentDefinition` từ Fragment của Item và thực hiện:
+    - Spawn `URPGWeaponInstance`.
+    - Gắn Mesh vào Socket trên Character.
+    - Cấp (Grant) các Gameplay Abilities cho nhân vật.
+
 ---
-*Cập nhật: 2025 - Tích hợp hệ thống Death & Footsteps chuyên biệt.*
+## 5. Các lỗi thường gặp và cách khắc phục (Common Issues)
+
+### Lỗi Biên dịch sau khi làm sạch dự án (Cleanup)
+Nếu bạn gặp lỗi liên quan đến `'PrimaryAssetTypesToScan': undeclared identifier` hoặc `'PrimaryAssetTypesToScan': is not a member of 'URPGAssetManager'`:
+
+**Nguyên nhân:** 
+Do sự thay đổi trong cấu trúc Engine (đặc biệt là các bản cập nhật mới) hoặc lỗi liên kết sau khi regenerate dự án, khiến compiler không nhận diện được các thành viên bảo vệ (protected) từ class cha.
+
+**Cách khắc phục TRIỆT ĐỂ:** 
+Để đảm bảo tính ổn định cao nhất và tuân thủ kiến trúc của Lyra, chúng ta sẽ chuyển toàn bộ việc quét Asset sang file cấu hình và để code C++ trống phần này.
+
+1. **Trong C++ (`RPGAssetManager.cpp`):** Hãy comment hoặc xóa các dòng đăng ký trong `StartInitialLoading()`:
+   ```cpp
+   void URPGAssetManager::StartInitialLoading()
+   {
+       Super::StartInitialLoading();
+       // Đã chuyển sang cấu hình trong DefaultGame.ini để tránh lỗi biên dịch
+       /*
+       this->PrimaryAssetTypesToScan.Add(...);
+       */
+   }
+   ```
+
+2. **Trong `DefaultGame.ini`:** Đảm bảo bạn đã có các dòng sau (đã hướng dẫn trong workflow chính):
+   ```ini
+   [/Script/Engine.AssetManagerSettings]
+   +PrimaryAssetTypesToScan=(PrimaryAssetType="RPGExperienceDefinition",AssetBaseClass=/Script/RPGRuntime.RPGExperienceDefinition,bHasBlueprintClasses=True,bIsEditorOnly=False,bDirectoriesShowBackslashes=True)
+   +PrimaryAssetTypesToScan=(PrimaryAssetType="RPGExperienceActionSet",AssetBaseClass=/Script/RPGRuntime.RPGExperienceActionSet,bHasBlueprintClasses=True,bIsEditorOnly=False,bDirectoriesShowBackslashes=True)
+   ```
+
+---
+*Cập nhật: 2025 - Chuyển sang kiến trúc Scan Asset qua Config để tối ưu hóa tính ổn định.*

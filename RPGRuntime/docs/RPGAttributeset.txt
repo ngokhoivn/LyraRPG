@@ -1,0 +1,1191 @@
+WEBVTT
+
+00:00:02.600 --> 00:00:08.240
+In this chapter, we will add the user interface HUD and the health bar for our character.
+
+00:00:09.120 --> 00:00:12.960
+Create the folder UserInterface within RPGcore.
+
+00:00:16.720 --> 00:00:19.600
+Right click userinterface - widget blueprint.
+
+00:00:20.400 --> 00:00:23.200
+Choose parent as <u>Lyra HUD layout.</u>
+
+00:00:29.320 --> 00:00:32.120
+Name it <u>W_RPGcore_HUD.</u>
+
+00:00:37.200 --> 00:00:38.280
+Add a safe zone.
+
+00:00:39.160 --> 00:00:46.760
+Wrapping the HUD widgets within a safe zone is a best practice when designing a user interface HUD.
+
+00:00:47.800 --> 00:00:49.600
+Below to that, add an overlay.
+
+00:00:57.800 --> 00:01:00.330
+Below to that, add a canvas panel.
+
+00:01:04.050 --> 00:01:12.730
+Fill horizontally and vertically. We will reuse the Lyra Health Bar widget to show the player character's health.
+
+00:01:13.570 --> 00:01:18.410
+Later, we will modify this widget and create a new stamina widget.
+
+00:01:18.434 --> 00:01:26.290
+For now to demonstrate the HUD functionality we will reuse the health component attached to the Lyra character.
+
+00:01:27.530 --> 00:01:32.170
+The Lyra attribute system and the health component are quite detailed.
+
+00:01:33.170 --> 00:01:40.850
+To make it easier for this course, we will create a lightweight version of the attribute system and the health component in the upcoming chapters.
+
+00:01:40.970 --> 00:01:48.690
+We will also create a new stamina attribute and stamina bar in that process.
+
+00:01:48.730 --> 00:01:53.730
+In the canvas panel, we will add the health bar.
+
+00:01:54.450 --> 00:01:56.730
+Search for <u>W_healthbar.</u>
+
+00:01:57.570 --> 00:01:59.570
+Place it under the canvas panel.
+
+00:02:00.790 --> 00:02:02.550
+Select sizetocontent.
+
+00:02:03.750 --> 00:02:06.150
+Place the health bar in the position you need.
+
+00:02:07.190 --> 00:02:11.510
+The widgets in the canvas panel can be moved directly to position.
+
+00:02:12.510 --> 00:02:15.870
+Select anchor and choose bottom left.
+
+00:02:16.990 --> 00:02:22.870
+Select the root. In the details panel under LyraHUDLayout.
+
+00:02:27.430 --> 00:02:36.830
+Select EscapeMenuClass as <u>W_LyraGameMenu</u>. Input config as game and menu.
+
+00:02:37.990 --> 00:02:43.630
+This configuration brings the ability to host the default escape menu during the game.
+
+00:02:45.390 --> 00:02:46.310
+Compile and save.
+
+00:02:47.310 --> 00:02:52.350
+Next, we need to add this user interface HUD to the RPG experience.
+
+00:02:53.830 --> 00:03:00.920
+We will create a new Lyraactionset for this. In the folder RPGCore - Experiences.
+
+00:03:01.760 --> 00:03:07.840
+Create a data asset parent as <u>lyraexperienceactionset.</u>
+
+00:03:13.080 --> 00:03:17.000
+Name it <u>LAS_RPGcore_standardHUD.</u>
+
+00:03:26.320 --> 00:03:27.440
+Add a new action.
+
+00:03:28.400 --> 00:03:30.200
+Select add widgets.
+
+00:03:34.440 --> 00:03:38.560
+Under UI , we have a layout and widgets.
+
+00:03:40.120 --> 00:03:45.800
+Layout is the HUD and the widgets are the UI widgets placed within the HUD.
+
+00:03:46.880 --> 00:03:53.880
+We can place the widgets either directly like we did with the health bar, or use the HUD slots.
+
+00:03:55.000 --> 00:03:58.640
+We will learn about HUD slots in the upcoming chapters.
+
+00:03:59.320 --> 00:04:04.140
+For now, add a layout.
+
+00:04:04.420 --> 00:04:10.580
+Layout class as <u>W_RPGcore_HUD</u>. Layer ID as <u>UI.Layer.Game.</u>
+
+00:04:16.980 --> 00:04:20.300
+Game features to enable . Select RPGcore.
+
+00:04:30.180 --> 00:04:31.500
+In the RPG experience.
+
+00:04:32.220 --> 00:04:34.500
+Add a new action in the action sets.
+
+00:04:35.460 --> 00:04:40.060
+Select <u>LAS_ RPGcore_standardHUD.</u>
+
+00:04:41.220 --> 00:04:42.740
+Now test the level.
+
+00:04:43.780 --> 00:04:46.500
+You can see the HUD displaying the health bar.
+
+00:04:47.660 --> 00:04:48.860
+When you press escape.
+
+00:04:49.260 --> 00:04:51.700
+You will get the default escape menu.
+
+00:04:52.980 --> 00:04:58.700
+In the next chapter, we will create the new RPG stats attribute and the health component.
+
+WEBVTT
+
+00:00:02.640 --> 00:00:09.800
+In this chapter, we will create the new RPG stats set which holds all the RPG attributes for our game.
+
+00:00:10.560 --> 00:00:18.440
+This is not a C++ course, so I will provide the C++ classes wherever we make changes to Lyra C++ code.
+
+00:00:19.240 --> 00:00:23.160
+In all the chapters where we make changes to the C++ codebase.
+
+00:00:23.520 --> 00:00:29.880
+There will be a zip file with the C++ code and a PDF document explaining the changes.
+
+00:00:30.640 --> 00:00:36.640
+We have disabled the Shootercore game feature plugin, but whenever we need some feature from it,
+
+00:00:36.640 --> 00:00:43.160
+we will enable the Shootercore game feature plugin and copy the assets to the RPG core game feature plugin.
+
+00:00:43.680 --> 00:00:46.720
+Then again disable the Shootercore game feature plugin.
+
+00:00:47.400 --> 00:00:50.640
+This is the process we are going to follow throughout this course.
+
+00:00:51.560 --> 00:00:58.080
+Now the Shootercore game feature plugin and its related game feature plugins also have C++ classes.
+
+00:00:58.560 --> 00:01:04.910
+So if our C++ change affects the C++ classes in the shooter core and the related plugins.
+
+00:01:05.430 --> 00:01:08.230
+They need to be taken care.
+
+00:01:08.430 --> 00:01:14.510
+In this course only the changes we make for the RPG stats attribute affects one of the classes in Shootercore.
+
+00:01:15.110 --> 00:01:18.550
+We won't be using it, so we will comment it out completely the shooter tests runtime.
+
+00:01:19.070 --> 00:01:24.550
+Before we make the changes to the C++ framework,
+
+00:01:25.030 --> 00:01:31.030
+We will enable the Shootercore , shooter explorer, shooter maps and shooter tests Game feature plugins.
+
+00:01:31.990 --> 00:01:33.030
+Restart the editor.
+
+00:01:37.750 --> 00:01:39.430
+Make sure everything is fine.
+
+00:01:40.030 --> 00:01:41.590
+We will close the editor now.
+
+00:01:42.590 --> 00:01:44.830
+Open the Visual Studio solution file.
+
+00:01:45.310 --> 00:01:49.030
+Make sure the Lyra RPG project is built successfully.
+
+00:01:50.070 --> 00:01:54.230
+Ensure the Unreal Editor is closed when you build in Visual Studio.
+
+00:02:09.780 --> 00:02:11.780
+Navigate in the Solution Explorer.
+
+00:02:12.300 --> 00:02:16.420
+First, we will comment out all the files which we won't be using in this course.
+
+00:02:17.220 --> 00:02:19.860
+Under <u>Ability System Attributes</u> folder.
+
+00:02:20.340 --> 00:02:23.500
+Open the file <u>LyraCombatSet.cpp.</u>
+
+00:02:23.900 --> 00:02:25.740
+Select all and comment everything.
+
+00:02:26.660 --> 00:02:31.900
+Next open <u>LyraCombatSet.h</u> . Select all and comment everything.
+
+00:02:33.700 --> 00:02:39.150
+Open the file <u>LyraHealthSet.cpp</u> comment everything .
+
+00:02:39.174 --> 00:02:43.660
+Open <u>LyraHealthSet.h</u>
+comment everything.
+
+00:03:03.080 --> 00:03:10.891
+Within the executions folder open the file <u>Lyradamageexecution.cpp.</u> Comment everything.
+
+00:03:10.915 --> 00:03:15.120
+Next open <u>Lyradamageexecution.h.</u> Comment everything.
+
+00:03:16.320 --> 00:03:20.240
+Open the file <u>Lyrahealexecution.cpp</u> comment everything.
+
+00:03:20.240 --> 00:03:25.920
+Open <u>Lyrahealexecution.h</u>. Comment everything.
+
+00:03:29.640 --> 00:03:36.840
+Next in the folder character, open the file <u>Lyracharacterwithabilities.cpp</u> comment everything
+
+00:03:37.840 --> 00:03:42.080
+open <u>Lyracharacterwithabilities.h</u> comment everything.
+
+00:03:42.600 --> 00:03:44.960
+Keep saving till now.
+
+00:03:45.000 --> 00:03:47.240
+We commented out the files we won't be using.
+
+00:03:47.920 --> 00:03:52.600
+We could have deleted the files but I prefer to comment them out for this course.
+
+00:03:53.200 --> 00:03:54.960
+Next we will add the new files.
+
+00:03:55.560 --> 00:04:01.790
+We will add the two files <u>LyraRPGstatsset.h and LyraRPGstatset.cpp</u>
+
+00:04:01.830 --> 00:04:10.550
+From the reference section to the folder Source - Lyra game - Ability system - Attributes
+
+00:04:10.550 --> 00:04:11.390
+From within Visual Studio.
+
+00:04:11.630 --> 00:04:14.190
+Open the <u>Lyracombatset.h</u> file.
+
+00:04:14.870 --> 00:04:19.870
+We have commented this file, but this file is in the attributes folder.
+
+00:04:20.350 --> 00:04:27.350
+You can right click the header tab for <u>LyraCombatset.h</u> and select Open Containing folder.
+
+00:04:27.910 --> 00:04:31.550
+This is a shortcut to reach the folder directly without browsing.
+
+00:04:32.190 --> 00:04:42.190
+Next, copy the two files <u>LyraRPGstatset.h and LyraRPGstatsset.cpp</u> from the reference section to the folder attributes .
+
+00:04:47.190 --> 00:04:50.830
+Next, we need to add these files to the Visual Studio solution.
+
+00:04:51.390 --> 00:04:56.590
+Within Visual Studio, right click attributes add existing item.
+
+00:04:57.790 --> 00:05:00.950
+Browse to the exact location where we added the two files.
+
+00:05:01.870 --> 00:05:05.660
+The Source - Lyra Game - Ability system - Attributes folder.
+
+00:05:06.260 --> 00:05:13.860
+Select the files <u>LyraRPGstatsset.h and LyraRPGstatsset.cpp</u> and select add.
+
+00:05:14.580 --> 00:05:19.020
+Now you can see the two files under attributes folder in Visual Studio.
+
+00:05:28.900 --> 00:05:34.020
+Next, under Character folder, open the file <u>LyraHealthcomponent.h.</u>
+
+00:05:34.500 --> 00:05:40.140
+Replace the content of this file with the same modified file attached in the reference section.
+
+00:05:46.460 --> 00:05:49.420
+Open the file <u>Lyrahealthcomponent.cpp.</u>
+
+00:05:49.900 --> 00:05:54.660
+Replace the content of this files with the same modified file attached in the reference section.
+
+00:05:58.020 --> 00:06:03.010
+Next, under player folder, open the file <u>Lyraplayerstate.h.</u>
+
+00:06:03.490 --> 00:06:07.450
+Replace the content of these files with the file attached in the reference section.
+
+00:06:16.090 --> 00:06:19.130
+Open the file <u>Lyraplayerstate.cpp.</u>
+
+00:06:19.810 --> 00:06:24.370
+Replace the content of this file with the same modified file attached in the reference section.
+
+00:06:38.570 --> 00:06:42.810
+There is one more file from the Shootercore tests game feature plugin.
+
+00:06:42.970 --> 00:06:44.090
+We need to comment out.
+
+00:06:44.570 --> 00:06:48.850
+This file uses the default health stat system, which we have modified now.
+
+00:06:57.850 --> 00:07:05.030
+Navigate to plugins - Gamefeatures - Shooter tests - Source - Shooter tests runtime - Private.
+
+00:07:09.310 --> 00:07:12.310
+Open <u>ShootertestMaptest.cpp.</u>
+
+00:07:12.670 --> 00:07:13.630
+Comment the file.
+
+00:07:14.270 --> 00:07:16.830
+There is no header file for this.
+
+00:07:17.510 --> 00:07:18.870
+We are done with the changes.
+
+00:07:18.990 --> 00:07:21.790
+Now we can build the Lyra RPG project.
+
+00:07:22.710 --> 00:07:29.230
+If the build is not successful and if it is due to the unreal Build accelerator, then rebuild again for success
+
+00:07:29.230 --> 00:07:33.470
+Or follow the steps I mentioned in the first build chapter.
+
+00:07:34.110 --> 00:07:40.350
+During this chapter, you can use the PDF file attached for reference to understand the code changes.
+
+00:07:40.830 --> 00:07:49.830
+You can also use a free code comparison tool like Winmerge to compare the changed code base with the default Lyra code base in another directory.
+
+00:07:50.550 --> 00:07:55.630
+You will be able to see what exactly is changed once the build is successful.
+
+00:07:55.910 --> 00:07:59.230
+You can close the Visual Studio and we are back in action.
+
+00:08:05.620 --> 00:08:07.020
+Open Unreal Editor.
+
+00:08:07.380 --> 00:08:11.300
+We can disable the Shootercore and all other related plugins.
+
+00:08:11.340 --> 00:08:31.660
+Now restart the editor.
+
+00:08:32.540 --> 00:08:36.020
+In the next chapter we can test the new attribute system.
+
+WEBVTT
+
+00:00:02.520 --> 00:00:13.480
+In this chapter, we will create a couple of gameplay abilities and gameplay effects for testing the RPG stats we created .
+
+00:00:13.840 --> 00:00:17.440
+In this process we need to create a lot of input related data assets.
+
+00:00:18.240 --> 00:00:20.120
+We will do it step by step.
+
+00:00:21.480 --> 00:00:25.480
+Currently, the player character is equipped with a greatsword.
+
+00:00:26.480 --> 00:00:32.560
+We will create two abilities <u>GA_SelfDamage and GA_SelfHeal.</u>
+
+00:00:33.600 --> 00:00:41.160
+When you press the left mouse button, self damage ability will be triggered, reducing five points from health.
+
+00:00:42.280 --> 00:00:50.120
+And when the right mouse button is pressed, the self heal ability will be triggered adding five points to health.
+
+00:00:51.160 --> 00:01:01.320
+We will add this to the ability set of greatsword, so that these abilities are available for the player character when the sword is equipped.
+
+00:01:02.680 --> 00:01:04.960
+This is purely for testing our attributes.
+
+00:01:05.840 --> 00:01:10.120
+Create a folder Abilities within Weapons - Greatsword.
+
+00:01:11.320 --> 00:01:15.400
+Create a blueprint with parent as <u>LyraGameplayability.</u>
+
+00:01:17.000 --> 00:01:19.480
+Name it as <u>GA_Selfdamage.</u>
+
+00:01:21.320 --> 00:01:25.640
+We need to apply the gameplay effect for five point reduction in health.
+
+00:01:26.400 --> 00:01:29.133
+So let us create the gameplay effect .
+
+00:01:29.157 --> 00:01:35.360
+In the same abilities folder create a blueprint parent as <u>gameplayeffect.</u>
+
+00:01:36.200 --> 00:01:38.920
+Name it <u>GE_Selfdamage.</u>
+
+00:01:41.680 --> 00:01:45.360
+Open it. Duration policy as instant.
+
+00:01:45.960 --> 00:01:49.200
+This means the effect will be immediately applied.
+
+00:01:50.880 --> 00:01:51.920
+Add a modifier.
+
+00:01:52.360 --> 00:01:59.600
+Choose the attribute as <u>LyraRPGstatsset.health</u> . <u>Modifier Op</u> as Add base
+
+00:01:59.840 --> 00:02:05.520
+Modifier magnitude calculation type as Scalable float.
+
+00:02:06.560 --> 00:02:09.560
+Scalable float magnitude as -5.
+
+00:02:10.560 --> 00:02:13.600
+This will reduce five points to the health attribute.
+
+00:02:14.320 --> 00:02:16.200
+Negative sign is important here.
+
+00:02:18.320 --> 00:02:21.640
+Now back in the gameplay ability self damage.
+
+00:02:22.360 --> 00:02:33.160
+Add the node <u>ApplyGameplayEffectToOwner</u> and choose the gameplayeffectclass as <u>GE_selfdamage</u> and then the end ability.
+
+00:02:54.120 --> 00:02:55.960
+Select class defaults.
+
+00:02:57.190 --> 00:03:04.590
+Ability activation policy as OnInputTriggered and all others as defaults.
+
+00:03:05.910 --> 00:03:15.470
+Repeat the same steps to create the gameplay ability <u>GA_SelfHeal</u> and gameplay effect <u>GE_SelfHeal.</u>
+
+00:03:20.590 --> 00:03:30.150
+The only change will be the scalable float magnitude should be plus five instead of minus five so that the value gets added.
+
+00:03:48.870 --> 00:03:54.670
+Next, we will create all the input related data assets for these two abilities.
+
+00:03:55.830 --> 00:04:01.230
+Create the folder Input within that create the folder Actions.
+
+00:04:06.670 --> 00:04:09.790
+Also create the folder Mappings.
+
+00:04:10.990 --> 00:04:15.750
+These folders are specific for the RPGcore game feature plugin.
+
+00:04:16.790 --> 00:04:22.630
+Inside the folder actions create the input action <u>IA_SelfDamage.</u>
+
+00:04:25.790 --> 00:04:26.470
+Open it.
+
+00:04:27.590 --> 00:04:28.430
+Add a trigger.
+
+00:04:28.950 --> 00:04:29.990
+Select pressed.
+
+00:04:31.630 --> 00:04:33.030
+This step is important.
+
+00:04:33.790 --> 00:04:37.670
+A single press of the mouse click will trigger the input once.
+
+00:04:38.150 --> 00:04:40.910
+Otherwise a series of inputs will be sent.
+
+00:04:43.630 --> 00:04:48.030
+Duplicate <u>IA_selfdamage</u> and create another input action.
+
+00:04:48.630 --> 00:04:50.830
+Name it <u>IA_Selfheal.</u>
+
+00:04:51.510 --> 00:04:54.110
+Ensure the trigger pressed is there.
+
+00:04:54.110 --> 00:04:57.190
+Next within the mappings folder.
+
+00:04:57.670 --> 00:05:00.430
+Create an input mapping context.
+
+00:05:01.670 --> 00:05:04.550
+Name it <u>IMC_RPGcore.</u>
+
+00:05:11.110 --> 00:05:12.470
+Add two mappings.
+
+00:05:13.190 --> 00:05:16.990
+First mapping select <u>IA_selfdamage.</u>
+
+00:05:17.510 --> 00:05:18.350
+Expand it.
+
+00:05:19.110 --> 00:05:21.030
+Click on the keyboard icon.
+
+00:05:21.710 --> 00:05:24.030
+Select left mouse button.
+
+00:05:25.310 --> 00:05:29.150
+Second mapping select <u>IA_selfheal.</u>
+
+00:05:29.710 --> 00:05:30.510
+Expand it.
+
+00:05:31.790 --> 00:05:35.350
+Click on the keyboard icon and select right mouse button.
+
+00:05:36.190 --> 00:05:43.150
+Next, in the input folder, create a data asset with parent as <u>Lyrainputconfig.</u>
+
+00:05:49.470 --> 00:05:53.150
+Name it <u>InputData_RPG_Addons.</u>
+
+00:05:58.590 --> 00:06:00.430
+Add an ability input action.
+
+00:06:01.230 --> 00:06:03.670
+Choose <u>IA_selfdamage.</u>
+
+00:06:04.750 --> 00:06:08.190
+Create an input tag <u>Inputtag.selfdamage.</u>
+
+00:06:09.550 --> 00:06:20.590
+The gameplay tag named inputtag is already there, so we use the option to add sub tag and create <u>inputtag.selfdamage.</u>
+
+00:06:21.590 --> 00:06:24.670
+Assign this tag to the input tag property.
+
+00:06:26.910 --> 00:06:28.670
+Add an ability input action.
+
+00:06:29.190 --> 00:06:31.070
+Choose <u>IA_selfheal.</u>
+
+00:06:31.670 --> 00:06:35.230
+Create a input tag <u>InputTag.SelfHeal.</u>
+
+00:06:36.030 --> 00:06:39.310
+You can create it as sub tag under input tag.
+
+00:06:46.030 --> 00:06:53.950
+Next we need to associate the inputconfig and the input mapping context With the RPG experience.
+
+00:06:55.030 --> 00:07:02.310
+In the Experiences folder, create a new data asset of type <u>LyraExperienceactionset.</u>
+
+00:07:02.990 --> 00:07:06.990
+Name it <u>LAS_RPG_Sharedinput.</u>
+
+00:07:09.070 --> 00:07:17.510
+Under actions to Perform add an action, select addinputbinds. Add an input config.
+
+00:07:18.110 --> 00:07:21.270
+Select <u>inputdata_RPG_addons.</u>
+
+00:07:26.670 --> 00:07:28.430
+Next add another action.
+
+00:07:28.950 --> 00:07:30.830
+Select add input mapping.
+
+00:07:33.070 --> 00:07:35.590
+Select <u>IMC_RPGcore.</u>
+
+00:07:40.910 --> 00:07:45.350
+Under game features to enable add RPGcore.
+
+00:07:52.100 --> 00:07:54.540
+Next open <u>RPG_Experience.</u>
+
+00:08:00.740 --> 00:08:05.500
+Under action sets add <u>LAS_ RPG_sharedinput.</u>
+
+00:08:07.260 --> 00:08:12.460
+Finally, we should also create the ability set for the weapon greatsword.
+
+00:08:13.260 --> 00:08:19.300
+This ability set gets activated when the greatsword is equipped .
+
+00:08:19.460 --> 00:08:26.900
+In the folder Weapons- Greatsword - Abilities create the data asset of type Lyraabilityset.
+
+00:08:29.820 --> 00:08:32.620
+Name it <u>Abilityset_Greatsword.</u>
+
+00:08:36.780 --> 00:08:41.900
+Add an entry <u>GA_Selfdamage and inputtag.Selfdamage.</u>
+
+00:08:51.500 --> 00:08:56.580
+Add an entry <u>GA_selfHeal and input tag.SelfHeal.</u>
+
+00:08:58.420 --> 00:09:07.340
+We can see that the input tag acts as a link between the ability set and the input config to configure the input for the ability.
+
+00:09:09.100 --> 00:09:16.340
+Finally, in <u>WID_greatsword</u>, under abilitysets to grant add the ability set.
+
+00:09:17.500 --> 00:09:18.740
+Now we can test this.
+
+00:09:19.860 --> 00:09:20.860
+Open the level.
+
+00:09:21.660 --> 00:09:29.140
+When you press the left mouse button, the health bar reduces by five points on each click.
+
+00:09:29.140 --> 00:09:33.460
+On right click The health bar adds five points on each click.
+
+00:09:34.900 --> 00:09:40.540
+This confirms our attributes New health manager and the health bar are all working correctly.
+
+00:09:41.300 --> 00:09:46.340
+In the next lecture, we can implement the death gameplay ability for the character.
+
+WEBVTT
+
+00:00:02.400 --> 00:00:06.160
+In this chapter we will implement the death ability for the character.
+
+00:00:07.520 --> 00:00:12.440
+We will reuse the <u>GA_Hero_death</u> ability in Lyra for this functionality.
+
+00:00:13.560 --> 00:00:16.440
+We will also make some changes.
+
+00:00:16.480 --> 00:00:24.720
+<u>GA_Hero_death</u> is available in the main content folder in the following path Characters - Heroes - Abilities.
+
+00:00:25.840 --> 00:00:26.480
+Open it.
+
+00:00:27.280 --> 00:00:31.280
+First we will configure this and then understand how it works.
+
+00:00:32.200 --> 00:00:42.040
+This ability is not linked to any weapons, so we will add this as part of the character's abilities in the folder RPGcore - Game.
+
+00:00:42.680 --> 00:00:46.120
+Create a data asset as type Lyraabilityset.
+
+00:00:59.690 --> 00:01:02.690
+Name it <u>AbilitySet_RPGHero.</u>
+
+00:01:07.370 --> 00:01:09.170
+Open it.
+
+00:01:09.170 --> 00:01:11.050
+Under Granted Gameplay abilities.
+
+00:01:11.610 --> 00:01:12.850
+Add new ability.
+
+00:01:13.570 --> 00:01:15.730
+Select <u>GA_Hero_Death.</u>
+
+00:01:16.450 --> 00:01:19.130
+No need to select the input tag for this ability.
+
+00:01:19.890 --> 00:01:23.330
+This ability will be triggered using the gameplay event.
+
+00:01:24.530 --> 00:01:28.309
+Open the heropawndata in the same folder.
+
+00:01:28.333 --> 00:01:33.530
+Under Ability Sets add the <u>Abilityset_RPGHero.</u>
+
+00:01:38.730 --> 00:01:41.850
+Now test the level.
+
+00:01:41.850 --> 00:01:45.250
+Self Damage the character until the health reaches zero.
+
+00:01:45.810 --> 00:01:49.290
+By default, the character gets to the ragdoll state.
+
+00:01:55.690 --> 00:02:01.310
+Open <u>B_ hero_default</u> in the folder RPGCore - Game - Characters.
+
+00:02:03.470 --> 00:02:09.470
+The ondeathstarted event from the health component has the logic for the death state.
+
+00:02:10.350 --> 00:02:17.070
+Variable deathmontages has a list of animation montages which will be randomly played.
+
+00:02:24.350 --> 00:02:27.710
+Currently the mannequins animations are configured here.
+
+00:02:28.470 --> 00:02:31.190
+We will be changing that in the child classes.
+
+00:02:32.510 --> 00:02:34.950
+Then the AI perception is unregistered.
+
+00:02:35.910 --> 00:02:44.310
+We will look into the AI perception shortly. Followed by a short delay and then ragdoll event is called.
+
+00:02:45.470 --> 00:02:50.656
+In the ragdoll event, the collision profile is set to ragdoll.
+
+00:02:50.680 --> 00:02:56.598
+Physics simulated for the body and an impulse is set which will throw the body.
+
+00:02:56.622 --> 00:03:04.640
+But in lyra there will be a dissolve effect which will run in parallel, Hiding the character during the ragdoll.
+
+00:03:05.800 --> 00:03:09.040
+The mannequin is configured for this ragdoll physics.
+
+00:03:10.000 --> 00:03:14.760
+We are using a different character and we will implement a simple feature during the death.
+
+00:03:15.560 --> 00:03:17.480
+We will not use the ragdoll effect.
+
+00:03:19.480 --> 00:03:22.480
+This is followed by hiding the equipped weapons.
+
+00:03:23.160 --> 00:03:29.600
+The death event is empty to add any additional logic. We will implement a simple logic.
+
+00:03:30.040 --> 00:03:32.760
+Play death animation and then hide.
+
+00:03:33.720 --> 00:03:40.800
+This will be followed by auto respawn for the player character, which we will implement in the next chapter.
+
+00:03:41.640 --> 00:03:45.480
+For now, just play the death animation and then hide.
+
+00:03:47.080 --> 00:03:51.680
+Let us create two animation montages for the death sequence for <u>Yin.</u>
+
+00:03:52.920 --> 00:03:57.540
+Identify the death animations from the Mixamo - Greatsword folder.
+
+00:04:03.100 --> 00:04:04.220
+Search for death.
+
+00:04:19.020 --> 00:04:21.860
+Let us retarget them to the <u>Yin</u> skeleton.
+
+00:04:41.620 --> 00:04:45.380
+Create the folder Greatsword in the folder Animations.
+
+00:04:54.550 --> 00:05:00.990
+Place the Retargeted animations in the greatsword folder prefix with <u>Yin_</u>
+
+00:05:26.270 --> 00:05:30.510
+Enable the root motion and force root lock for the animations.
+
+00:05:43.990 --> 00:05:49.630
+Next, create the animation montages for these two death animations for greatsword.
+
+00:06:12.840 --> 00:06:14.960
+Change the slotname to Full Body.
+
+00:06:38.280 --> 00:06:40.400
+Open <u>ABP_Player_base.</u>
+
+00:06:45.400 --> 00:06:49.120
+After <u>inertialization</u> node, add a slot node.
+
+00:06:57.460 --> 00:07:03.820
+In the details panel, select the slot name as <u>Defaultslot.Fullbody.</u>
+
+00:07:09.500 --> 00:07:13.140
+Next, let us implement the new logic for the ragdoll.
+
+00:07:14.340 --> 00:07:20.020
+In <u>B_hero_default</u>, we won't add the death montages animations here.
+
+00:07:20.580 --> 00:07:24.500
+Instead, we will do that in the child character classes.
+
+00:07:25.220 --> 00:07:29.740
+But we will change the logic here. OnDeathstarted event.
+
+00:07:30.500 --> 00:07:33.380
+We can see the ragdoll custom event is called.
+
+00:07:34.380 --> 00:07:37.460
+We will change the logic within this ragdoll event.
+
+00:07:38.180 --> 00:07:38.860
+Open it.
+
+00:07:39.700 --> 00:07:41.180
+Disconnect the current logic.
+
+00:07:42.060 --> 00:07:47.420
+We will have a very simple logic to hide the character after the death animation is played.
+
+00:07:48.180 --> 00:07:50.180
+You can decide your own logic here.
+
+00:07:52.030 --> 00:07:56.190
+Use self and call <u>setactorhiddeningame</u> node.
+
+00:07:57.150 --> 00:07:59.470
+Set the newhiddenvalue to true.
+
+00:08:08.750 --> 00:08:11.790
+Also in the ondeathstated event.
+
+00:08:12.390 --> 00:08:16.230
+Remove the random float value for the delay node.
+
+00:08:16.590 --> 00:08:22.870
+Instead, you will get the return value from the play anim montage, which returns the duration of the animation.
+
+00:08:23.670 --> 00:08:27.630
+You can reduce .2 from it and assign it as delay.
+
+00:08:46.030 --> 00:08:49.450
+As a final step, we need to assign the montages.
+
+00:08:50.570 --> 00:08:54.010
+We will do that in the child character class  <u>B_hero_ulag.</u>
+
+00:08:55.210 --> 00:08:55.810
+Open it.
+
+00:08:56.410 --> 00:08:58.650
+Select death montage variable.
+
+00:08:59.370 --> 00:09:03.410
+Remove the default mannequin related animation Death montages.
+
+00:09:04.650 --> 00:09:08.570
+Add the newly created death montages for <u>Yin</u> character.
+
+00:09:20.130 --> 00:09:22.050
+Now we can test the level.
+
+00:09:28.010 --> 00:09:36.290
+When the health reaches zero, the character dies Playing the death animation montage and then hide from the level.
+
+00:09:38.130 --> 00:09:41.570
+The camera also changes to the death camera mode.
+
+00:09:42.890 --> 00:09:46.410
+Next, we will implement the auto respawn functionality.
+
+WEBVTT
+
+00:00:02.400 --> 00:00:06.880
+In this chapter we will implement the auto respawn ability for the character.
+
+00:00:07.720 --> 00:00:12.160
+We will reuse the auto respawn ability in Lyra for the RPG character.
+
+00:00:13.280 --> 00:00:19.120
+The auto respawn ability is available in the shooter core, so we will enable the Shootercore plugin.
+
+00:00:19.760 --> 00:00:24.600
+Move the required files to the RPG core plugin and then disable them back.
+
+00:00:25.520 --> 00:00:29.840
+First enable the Shootercore plugin and restart the editor.
+
+00:00:43.920 --> 00:00:54.040
+We can find the <u>GA_Autorespawn</u> and the <u>W_RespawnTimer</u> assets in the folder Shootercore - Game - Respawn.
+
+00:00:55.440 --> 00:01:00.360
+Create a new folder Respawn under RPGcore - Game.
+
+00:01:05.050 --> 00:01:15.106
+Move the <u>GA _Autorespawn and the W_respawntimer.</u> Assets to RPGcore - Game - Respawn the new folder we created now .
+
+00:01:15.130 --> 00:01:21.250
+Always have a look at the asset manager, validating assets, warning and errors.
+
+00:01:22.010 --> 00:01:28.930
+In this case, the warning is about the usage in Shootercore which is not relevant to us.
+
+00:01:30.050 --> 00:01:31.450
+We can ignore this warning.
+
+00:01:32.330 --> 00:01:35.810
+Once you disable the Shootercore, we won't get the warning anymore.
+
+00:01:37.250 --> 00:01:41.290
+Let us disable the Shootercore plugin and restart the editor.
+
+00:01:42.450 --> 00:01:44.690
+Open <u>GA_autorespawn.</u>
+
+00:01:57.130 --> 00:02:05.990
+In the event graph, in the register extension node, the gameplay tag <u>HUD.Slot.Reticle</u> will be missing.
+
+00:02:06.750 --> 00:02:11.230
+We need to add that. Add the tag <u>HUD.Slot.Reticle.</u>
+
+00:02:22.030 --> 00:02:23.790
+We need to do two things now.
+
+00:02:24.870 --> 00:02:30.150
+The auto respawn game playability needs to be added to the player state.
+
+00:02:31.470 --> 00:02:34.550
+The reason why we are adding the ability to player state.
+
+00:02:35.750 --> 00:02:39.190
+This ability will be executed after the player death.
+
+00:02:39.870 --> 00:02:42.830
+Player state is the right place to achieve that.
+
+00:02:43.830 --> 00:02:50.670
+For this, we will create a new ability set which contains all the abilities to be run in player state.
+
+00:02:52.430 --> 00:02:54.550
+In the RPGcore - Game folder,
+
+00:02:55.030 --> 00:02:59.430
+Create a data asset with parent as <u>LyraAbilityset.</u>
+
+00:03:03.550 --> 00:03:07.200
+Name it <u>Abilityset_RPG_playerstate.</u>
+
+00:03:15.880 --> 00:03:18.240
+Under grantedgameplayabilities.
+
+00:03:18.760 --> 00:03:20.160
+Add a new gameplay ability.
+
+00:03:20.840 --> 00:03:23.360
+Select <u>GA_autorespawn.</u>
+
+00:03:24.320 --> 00:03:26.160
+No need to select the input tag.
+
+00:03:28.240 --> 00:03:30.720
+Open <u>RPG_Experience</u> blueprint.
+
+00:03:34.680 --> 00:03:37.360
+Under actions, add a new action.
+
+00:03:37.760 --> 00:03:42.160
+Select Add Abilities .Under abilities list,
+
+00:03:42.720 --> 00:03:43.480
+Add an entry.
+
+00:03:44.040 --> 00:03:48.480
+Select actor class as LyraPlayerstate.
+
+00:03:52.760 --> 00:03:59.120
+Under grantedabilitysets, select <u>Abilityset_RPG_playerstate.</u>
+
+00:03:59.960 --> 00:04:00.640
+Save it.
+
+00:04:01.720 --> 00:04:08.130
+The auto respawn ability uses a timer widget shown at the reticle position in the HUD.
+
+00:04:09.250 --> 00:04:15.450
+It is dynamically shown when auto respawn happens and then removed from the HUD.
+
+00:04:16.490 --> 00:04:18.250
+Let us configure this now.
+
+00:04:19.530 --> 00:04:22.290
+Open <u>W_RPGcore_HUD.</u>
+
+00:04:23.610 --> 00:04:30.530
+Add a new UI extension point widget and name it <u>Extensionpoint_Respawntimer.</u>
+
+00:04:46.370 --> 00:04:50.610
+Set sizetocontent to true. Alignment as 1.
+
+00:04:51.810 --> 00:04:53.330
+Anchor it to the center.
+
+00:05:07.370 --> 00:05:11.620
+Add the extension point tag as <u>HUD.Slot.Reticle</u>
+
+00:05:20.100 --> 00:05:25.500
+In the <u>GA_autorespawn</u>, In the event graph, onabilityadded.
+
+00:05:26.660 --> 00:05:34.020
+The first thing the ability does is to dynamically register the extension point with the tag <u>HUD.Slot.Reticle</u>
+
+00:05:34.060 --> 00:05:37.380
+and add the timer widget.
+
+00:05:38.340 --> 00:05:39.900
+Now we can test the level.
+
+00:05:40.980 --> 00:05:48.660
+You can see that after the character dies after damage, it plays the death montage and then hides.
+
+00:05:49.500 --> 00:05:52.460
+The timer also starts for auto respawn.
+
+00:05:53.300 --> 00:05:58.820
+After the timer ends, the character is respawned, but there is a problem.
+
+00:05:59.700 --> 00:06:01.940
+After respawn, the sword is gone.
+
+00:06:03.180 --> 00:06:09.020
+We haven't cleared the inventory correctly after death, so open <u>B_hero_ulag.</u>
+
+00:06:15.400 --> 00:06:19.720
+Override the events <u>OnReset and OnDeathFinished.</u>
+
+00:06:28.600 --> 00:06:31.400
+Call the clear inventory function in both the flows.
+
+00:06:44.160 --> 00:06:46.040
+Now test the level again.
+
+00:06:58.160 --> 00:07:00.600
+We can see the respawn working correctly now.
+
+WEBVTT
+
+00:00:02.960 --> 00:00:10.000
+In this chapter, we will use the stamina attribute we added along with the health attribute in a previous chapter .
+
+00:00:10.960 --> 00:00:18.480
+To view the value of stamina attribute, we will use a separate copy of the health bar and make some minor changes to it.
+
+00:00:19.880 --> 00:00:27.600
+Finally, we will test the New stamina bar using the test gameplay abilities we created to add and remove health earlier.
+
+00:00:27.640 --> 00:00:31.640
+In the folder UI - HUD.
+
+00:00:32.200 --> 00:00:37.760
+Duplicate <u>W_Healthbar</u> and name it <u>W_Staminabar.</u>
+
+00:00:42.480 --> 00:00:44.920
+Open <u>W_Staminabar.</u>
+
+00:00:46.280 --> 00:00:55.280
+We will replace the health related references from the health component to stamina, and also rename the health variables to stamina.
+
+00:00:56.200 --> 00:01:00.280
+Rename the variables <u>normalizedhealth to normalizedstamina.</u>
+
+00:01:08.300 --> 00:01:11.380
+<u>HealthOldValue to StaminaOldValue.</u>
+
+00:01:14.900 --> 00:01:17.620
+<u>HealthNewValue to StaminaNewValue.</u>
+
+00:01:24.700 --> 00:01:31.140
+Replace <u>UnbindEventFromOnHealthChanged to UnbindEventFromOnStaminaChanged</u>
+
+00:01:59.180 --> 00:02:01.140
+Rename the event Staminachanged.
+
+00:02:29.850 --> 00:02:35.690
+Replace <u>bindeventtoonhealthchanged to bindeventtoonstaminachanged.</u>
+
+00:02:58.210 --> 00:03:02.890
+Replace the function <u>Gethealthnormalized to getstaminanormalized.</u>
+
+00:03:17.510 --> 00:03:20.110
+<u>Updatehealthbar to updatestaminabar</u>.
+
+00:03:34.550 --> 00:03:36.310
+This event is anyway unused.
+
+00:03:37.510 --> 00:03:40.190
+Remove the eventoneliminated logic.
+
+00:03:40.910 --> 00:03:44.030
+We do not need the eliminated logic for the stamina bar.
+
+00:04:00.990 --> 00:04:03.030
+We can make some cosmetic changes now.
+
+00:04:03.910 --> 00:04:05.950
+This can be done in your own way.
+
+00:04:06.310 --> 00:04:08.030
+I will show some approaches.
+
+00:04:08.990 --> 00:04:13.030
+What we learn here is applicable to many other UI widgets in Lyra.
+
+00:04:13.910 --> 00:04:16.550
+In the designer view, select <u>barfill.</u>
+
+00:04:17.030 --> 00:04:22.330
+Open the folder for the material instance <u>MI_ UI_ healthbar_fill</u>
+
+00:04:22.970 --> 00:04:27.770
+Duplicate it and name it <u>MI_UI_StaminaBar_Fill</u>
+
+00:04:32.490 --> 00:04:33.090
+Open it.
+
+00:04:33.810 --> 00:04:36.690
+You can change the colors here for the stamina bar.
+
+00:05:00.450 --> 00:05:02.330
+Next, select the <u>barglow.</u>
+
+00:05:05.450 --> 00:05:10.330
+Open the folder for the material instance <u>MI_UI_healthbar_glow.</u>
+
+00:05:11.090 --> 00:05:16.010
+Duplicate it and name it <u>MI_UI_Stamina.Glow</u>
+
+00:05:20.210 --> 00:05:20.850
+Open it.
+
+00:05:22.330 --> 00:05:25.110
+You can change the colors here for the stamina bar.
+
+00:05:36.390 --> 00:05:41.670
+We are done now we will add the stamina bar next to the health bar in the HUD.
+
+00:05:42.310 --> 00:05:44.230
+Open the <u>RPGcore_HUD.</u>
+
+00:05:47.590 --> 00:05:50.830
+Place the <u>W_staminabar</u> above the healthbar.
+
+00:05:58.590 --> 00:06:01.070
+Change the settings as we did for the health bar.
+
+00:06:07.510 --> 00:06:11.510
+Sizetocontent true and anchored bottom left.
+
+00:06:31.940 --> 00:06:36.780
+Next open the gameplay effects <u>GE_selfdamage and GE_selfheal.</u>
+
+00:06:54.460 --> 00:06:58.740
+And change the attribute to <u>LyraRPGstatset.stamina.</u>
+
+00:06:59.860 --> 00:07:07.700
+The gameplay abilities, self Damage and heal are for testing, so we can reuse the same and test the stamina bar functionality.
+
+00:07:08.780 --> 00:07:11.380
+We can confirm the stamina bar is working fine.
+
+00:07:12.260 --> 00:07:15.820
+In the next chapter we will implement the melee attack ability.

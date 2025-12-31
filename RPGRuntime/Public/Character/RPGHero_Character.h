@@ -9,6 +9,7 @@
 class UAnimMontage;
 class USceneComponent;
 class URPGHeroComponent;
+class URPGInventoryItemDefinition;
 
 /**
  * ARPGHero_Character
@@ -25,6 +26,7 @@ public:
 
 	//~ARPGCharacter interface
 	virtual void OnDeathStarted(AActor* OwningActor) override;
+	virtual void PossessedBy(AController* NewController) override;
 	//~End of ARPGCharacter interface
 
 	//~IRPGContextEffectsInterface
@@ -51,6 +53,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RPG|Effects")
 	TSubclassOf<AActor> FootStepActorClass;
 
+	/** Items to grant to the player on spawn */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPG|Inventory")
+	TArray<TSubclassOf<URPGInventoryItemDefinition>> InitialInventoryItems;
+
 	/** The spawned footstep effect actor */
 	UPROPERTY(Transient)
 	TObjectPtr<AActor> FootStepActor;
@@ -61,7 +67,17 @@ protected:
 	/** Hides all equipped weapons */
 	void HideEquippedWeapons();
 
+	/** Attempts to add initial inventory, uses polling if components aren't ready */
+	void TryAddInitialInventory();
+
+	/** Actually grants the items */
+	void AddInitialInventory(class URPGInventoryManagerComponent* InventoryMgr, class URPGQuickbarComponent* Quickbar);
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RPG|Hero", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<URPGHeroComponent> HeroComponent;
+
+	bool bInventoryInitialized = false;
+
+	FTimerHandle TimerHandle_InventoryReady;
 };

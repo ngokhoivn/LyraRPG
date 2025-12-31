@@ -113,16 +113,14 @@ void URPGWeaponInstance::SpawnWeaponActors()
         );
         
         NewActor->FinishSpawning(FTransform::Identity, true);
-        NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
-        
         if (SpawnInfo.AttachSocket != NAME_None)
-        {
             NewActor->AttachToComponent(
                 AttachTarget,
                 FAttachmentTransformRules::KeepRelativeTransform,
                 SpawnInfo.AttachSocket
             );
-        }
+        
+        NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
 
         SpawnedActors.Add(NewActor);
     }
