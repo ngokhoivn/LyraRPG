@@ -44,17 +44,17 @@ class UObject;
 					}
 					else
 					{
-						UE_LOG(LogRPG, Verbose, TEXT("GetPrimaryGameLayout: Policy found but RootLayout is NULL for Player [%s]"), *GetNameSafe(CommonLocalPlayer));
+						UE_LOG(LogRPG, Warning, TEXT("GetPrimaryGameLayout: Policy found but RootLayout is NULL for Player [%s]"), *GetNameSafe(CommonLocalPlayer));
 					}
 				}
 				else
 				{
-					UE_LOG(LogRPG, Verbose, TEXT("GetPrimaryGameLayout: UIManager found but CurrentUIPolicy is NULL!"));
+					UE_LOG(LogRPG, Warning, TEXT("GetPrimaryGameLayout: UIManager found but CurrentUIPolicy is NULL!"));
 				}
 			}
 			else
 			{
-				UE_LOG(LogRPG, Verbose, TEXT("GetPrimaryGameLayout: URPGUIManagerSubsystem NOT FOUND in GameInstance!"));
+				UE_LOG(LogRPG, Warning, TEXT("GetPrimaryGameLayout: URPGUIManagerSubsystem NOT FOUND in GameInstance!"));
 			}
 		}
 	}

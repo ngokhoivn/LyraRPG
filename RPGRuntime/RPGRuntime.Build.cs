@@ -35,6 +35,7 @@ public class RPGRuntime : ModuleRules
 			"CommonGame",
 			"UMG",
 			"FieldNotification",
+			"UIExtension",
 
 			// Lyra Core (Cho phép RPGAssetManager kế thừa từ LyraAssetManager)
 			"LyraGame"

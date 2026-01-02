@@ -30,6 +30,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPG|Ability")
 	URPGAbilitySystemComponent* GetRPGAbilitySystemComponentFromActorInfo() const;
 
+	UFUNCTION(BlueprintCallable, Category = "RPG|Ability")
+	APlayerController* GetPlayerControllerFromActorInfo() const;
+
+	UFUNCTION(BlueprintCallable, Category = "RPG|Ability")
+	APlayerState* GetPlayerStateFromActorInfo() const;
+
 	ERPGAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 	ERPGAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
 
@@ -78,6 +84,7 @@ protected:
 	virtual FGameplayEffectContextHandle MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const override;
 	virtual void ApplyAbilityTagsToGameplayEffectSpec(FGameplayEffectSpec& Spec, FGameplayAbilitySpec* AbilitySpec) const override;
 	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	//~End of UGameplayAbility interface
 
 	virtual void OnPawnAvatarSet();

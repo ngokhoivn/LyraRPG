@@ -45,6 +45,8 @@ public:
 	FGameplayTag Message_Attribute_HealthChanged;
 	FGameplayTag Message_Attribute_ManaChanged;
 	FGameplayTag Message_Attribute_StaminaChanged;
+	FGameplayTag Message_Respawn_Duration;
+	FGameplayTag Message_Respawn_Completed;
 
 	// Cosmetic Status Tags
 	FGameplayTag Status_Weapon_Equipped;
@@ -140,4 +142,14 @@ namespace RPGGameplayTags
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Flying);
 
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Custom);
+
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Type_Status_Death);
+	/** Ability.Respawn.Duration - Message with respawn duration. */
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Message_Respawn_Duration);
+
+	/** Ability.Respawn.Completed - Message when respawn is completed. */
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Message_Respawn_Completed);
+
+	/** HUD.Slot.Reticle - HUD slot for the reticle/respawn timer. */
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(HUD_Slot_Reticle);
 }

@@ -32,10 +32,6 @@ void URPGGA_ModifyHealth::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 			SpecHandle.Data->SetSetByCallerMagnitude(SetByCallerTag, Value);
 
 			ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-			
-			UE_LOG(LogRPG, Log, TEXT("RPGGA_ModifyHealth: Applied GE [%s] with SetByCaller [%s] = %f"), 
-				*GetNameSafe(EffectToApply), *SetByCallerTag.ToString(), Value);
-			UE_LOG(LogRPG, Log, TEXT("RPGGA_ModifyHealth: Internal Health is now %f"), ASC->GetNumericAttribute(URPGAttributeSet::GetHealthAttribute()));
 		}
 	}
 	else

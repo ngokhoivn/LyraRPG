@@ -3,6 +3,7 @@
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "AbilitySystem/RPGAbilityTagRelationshipMapping.h"
 #include "AbilitySystem/RPGGameplayAbility.h"
+#include "AbilitySystem/Attributes/RPGAttributeSet.h"
 #include "System/RPGLogChannels.h"
 #include "AttributeSet.h"
 #include "Engine/World.h"
@@ -52,12 +53,25 @@ void URPGAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AAct
 void URPGAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 {
 	ABILITYLIST_SCOPE_LOCK();
+	UE_LOG(LogRPG, Log, TEXT("URPGAbilitySystemComponent::TryActivateAbilitiesOnSpawn: Checking %d abilities on %s"), ActivatableAbilities.Items.Num(), *GetNameSafe(GetOwner()));
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 	{
 		if (const URPGGameplayAbility* RPGAbilityCDO = Cast<URPGGameplayAbility>(AbilitySpec.Ability))
 		{
 			RPGAbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
 		}
+	}
+}
+
+void URPGAbilitySystemComponent::FullResetAttributes()
+{
+	if (const URPGAttributeSet* AttributeSet = GetSet<URPGAttributeSet>())
+	{
+		SetNumericAttributeBase(AttributeSet->GetHealthAttribute(), AttributeSet->GetMaxHealth());
+		SetNumericAttributeBase(AttributeSet->GetManaAttribute(), AttributeSet->GetMaxMana());
+		SetNumericAttributeBase(AttributeSet->GetStaminaAttribute(), AttributeSet->GetMaxStamina());
+
+		UE_LOG(LogRPG, Log, TEXT("URPGAbilitySystemComponent::FullResetAttributes: Attributes reset to max in %s"), *GetNameSafe(GetOwner()));
 	}
 }
 

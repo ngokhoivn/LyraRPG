@@ -6,8 +6,6 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/RPGEquipmentManagerComponent.h"
 #include "Equipment/RPGWeaponInstance.h"
-#include "Perception/AIPerceptionSystem.h"
-#include "Perception/AISense_Sight.h"
 #include "TimerManager.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/RPGInventoryItemDefinition.h"
@@ -40,32 +38,8 @@ void ARPGHero_Character::OnDeathStarted(AActor* OwningActor)
 {
 	Super::OnDeathStarted(OwningActor);
 
-	// 1. Play random death montage
-	if (DeathMontages.Num() > 0)
-	{
-		const int32 RandomIndex = FMath::RandRange(0, DeathMontages.Num() - 1);
-		if (UAnimMontage* SelectedMontage = DeathMontages[RandomIndex])
-		{
-			PlayAnimMontage(SelectedMontage);
-		}
-	}
-
-	// 2. Unregister from AI senses (specifically Sight)
-	if (UAIPerceptionSystem* PerceptionSystem = UAIPerceptionSystem::GetCurrent(GetWorld()))
-	{
-		PerceptionSystem->UnregisterSource(*this, UAISense_Sight::StaticClass());
-	}
-
-	// 3. Hide equipped weapons
+	// Hide equipped weapons
 	HideEquippedWeapons();
-
-	// 4. Random delay before ragdoll
-	const float RandomDelay = FMath::FRandRange(0.1f, 0.6f);
-	GetWorldTimerManager().SetTimerForNextTick([this, RandomDelay]()
-	{
-		FTimerHandle RagdollTimerHandle;
-		GetWorldTimerManager().SetTimer(RagdollTimerHandle, this, &ARPGHero_Character::StartRagdoll, RandomDelay, false);
-	});
 }
 
 void ARPGHero_Character::StartRagdoll()

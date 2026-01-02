@@ -29,6 +29,8 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	//~End of ARPGCharacter interface
 
+	const TArray<TObjectPtr<UAnimMontage>>& GetDeathMontages() const { return DeathMontages; }
+
 	//~IRPGContextEffectsInterface
 	virtual void AnimMotionEffect_Implementation(const FName Bone
 		, const FGameplayTag MotionEffect

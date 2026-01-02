@@ -58,27 +58,17 @@ protected:
 	/* =========================
 	 *  Widgets
 	 * ========================= */
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
 	TObjectPtr<UImage> BarFill = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
 	TObjectPtr<UImage> BarBorder = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
 	TObjectPtr<UImage> BarGlow = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCommonNumericTextBlock> HealthNumber = nullptr;
-
-protected:
-	/* =========================
-	 *  Animations
-	 * ========================= */
-	UPROPERTY(Transient, meta = (BindWidgetAnim))
-	TObjectPtr<UWidgetAnimation> OnDamagedAnimation = nullptr;
-
-	UPROPERTY(Transient, meta = (BindWidgetAnim))
-	TObjectPtr<UWidgetAnimation> OnEliminatedAnimation = nullptr;
 
 protected:
 	/* =========================
@@ -113,7 +103,4 @@ protected:
 	 * ========================= */
 	static const FName Param_HealthCurrent;
 	static const FName Param_HealthUpdated;
-	static const FName Param_AnimateDamage;
-	static const FName Param_AnimateDamageFade;
-	static const FName Param_GlowAlphaChange;
 };

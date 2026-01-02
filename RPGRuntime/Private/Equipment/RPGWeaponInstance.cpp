@@ -67,7 +67,6 @@ void URPGWeaponInstance::Equip()
 
         if (RPGASC)
         {
-            UE_LOG(LogRPG, Log, TEXT("RPGWeaponInstance::Equip: Found ASC on %s, granting %d ability sets."), *GetNameSafe(Pawn), EquipmentDefinition ? EquipmentDefinition->AbilitySetsToGrant.Num() : 0);
             if (EquipmentDefinition)
             {
                 for (const URPGAbilitySet* AbilitySet : EquipmentDefinition->AbilitySetsToGrant)
@@ -92,7 +91,13 @@ void URPGWeaponInstance::Unequip()
     // Remove granted abilities
     if (APawn* Pawn = GetPawn())
     {
-        if (URPGAbilitySystemComponent* RPGASC = Pawn->FindComponentByClass<URPGAbilitySystemComponent>())
+        URPGAbilitySystemComponent* RPGASC = nullptr;
+        if (URPGPawnExtensionComponent* PawnExtComp = Pawn->FindComponentByClass<URPGPawnExtensionComponent>())
+        {
+            RPGASC = PawnExtComp->GetRPGAbilitySystemComponent();
+        }
+
+        if (RPGASC)
         {
             GrantedHandles.TakeFromAbilitySystem(RPGASC);
         }

@@ -170,15 +170,6 @@ void URPGAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
 
-		FRPGAttributeChangedMessage Message;
-		Message.Owner = Data.Target.GetAvatarActor();
-		Message.AttributeTag = FRPGGameplayTags::Get().Stat_Health;
-		Message.NewValue = GetHealth();
-		Message.MaxValue = GetMaxHealth();
-
-		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSubsystem.BroadcastMessage(FRPGGameplayTags::Get().Message_Attribute_HealthChanged, Message);
-
 		if (GetHealth() != HealthBeforeAttributeChange)
 		{
 			OnHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, HealthBeforeAttributeChange, GetHealth());
@@ -211,28 +202,10 @@ void URPGAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	else if (Data.EvaluatedData.Attribute == GetManaAttribute())
 	{
 		SetMana(FMath::Clamp(GetMana(), 0.0f, GetMaxMana()));
-
-		FRPGAttributeChangedMessage Message;
-		Message.Owner = Data.Target.GetAvatarActor();
-		Message.AttributeTag = FRPGGameplayTags::Get().Stat_Mana;
-		Message.NewValue = GetMana();
-		Message.MaxValue = GetMaxMana();
-
-		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSubsystem.BroadcastMessage(FRPGGameplayTags::Get().Message_Attribute_ManaChanged, Message);
 	}
 	else if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
 	{
 		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
-
-		FRPGAttributeChangedMessage Message;
-		Message.Owner = Data.Target.GetAvatarActor();
-		Message.AttributeTag = FRPGGameplayTags::Get().Stat_Stamina;
-		Message.NewValue = GetStamina();
-		Message.MaxValue = GetMaxStamina();
-
-		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSubsystem.BroadcastMessage(FRPGGameplayTags::Get().Message_Attribute_StaminaChanged, Message);
 
 		if (GetStamina() != StaminaBeforeAttributeChange)
 		{
@@ -242,6 +215,52 @@ void URPGAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	else if (Data.EvaluatedData.Attribute == GetMaxStaminaAttribute())
 	{
 		OnMaxStaminaChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, MaxStaminaBeforeAttributeChange, GetMaxStamina());
+	}
+}
+
+void URPGAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (Attribute == GetHealthAttribute())
+	{
+		// Reset out of health flag if we're above 0
+		if (NewValue > 0.0f)
+		{
+			bOutOfHealth = false;
+		}
+
+		// Broadcast for UI updates (covers manual SetNumericAttributeBase calls like Respawn)
+		FRPGAttributeChangedMessage Message;
+		Message.Owner = GetOwningAbilitySystemComponent()->GetAvatarActor();
+		Message.AttributeTag = FRPGGameplayTags::Get().Stat_Health;
+		Message.NewValue = NewValue;
+		Message.MaxValue = GetMaxHealth();
+
+		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSubsystem.BroadcastMessage(FRPGGameplayTags::Get().Message_Attribute_HealthChanged, Message);
+	}
+	else if (Attribute == GetManaAttribute())
+	{
+		FRPGAttributeChangedMessage Message;
+		Message.Owner = GetOwningAbilitySystemComponent()->GetAvatarActor();
+		Message.AttributeTag = FRPGGameplayTags::Get().Stat_Mana;
+		Message.NewValue = NewValue;
+		Message.MaxValue = GetMaxMana();
+
+		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSubsystem.BroadcastMessage(FRPGGameplayTags::Get().Message_Attribute_ManaChanged, Message);
+	}
+	else if (Attribute == GetStaminaAttribute())
+	{
+		FRPGAttributeChangedMessage Message;
+		Message.Owner = GetOwningAbilitySystemComponent()->GetAvatarActor();
+		Message.AttributeTag = FRPGGameplayTags::Get().Stat_Stamina;
+		Message.NewValue = NewValue;
+		Message.MaxValue = GetMaxStamina();
+
+		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSubsystem.BroadcastMessage(FRPGGameplayTags::Get().Message_Attribute_StaminaChanged, Message);
 	}
 }
 

@@ -8,6 +8,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemGlobals.h"
 #include "Camera/RPGCameraMode.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RPGGameplayAbility)
 
@@ -39,6 +41,16 @@ URPGGameplayAbility::URPGGameplayAbility(const FObjectInitializer& ObjectInitial
 URPGAbilitySystemComponent* URPGGameplayAbility::GetRPGAbilitySystemComponentFromActorInfo() const
 {
 	return (CurrentActorInfo ? Cast<URPGAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr);
+}
+
+APlayerController* URPGGameplayAbility::GetPlayerControllerFromActorInfo() const
+{
+	return (CurrentActorInfo ? Cast<APlayerController>(CurrentActorInfo->PlayerController.Get()) : nullptr);
+}
+
+APlayerState* URPGGameplayAbility::GetPlayerStateFromActorInfo() const
+{
+	return (CurrentActorInfo ? Cast<APlayerState>(CurrentActorInfo->OwnerActor.Get()) : nullptr);
 }
 
 void URPGGameplayAbility::NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
@@ -195,6 +207,13 @@ bool URPGGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbilitySystem
 	return true;
 }
 
+void URPGGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnAvatarSet(ActorInfo, Spec);
+
+	OnPawnAvatarSet();
+}
+
 void URPGGameplayAbility::OnPawnAvatarSet()
 {
 	K2_OnPawnAvatarSet();
@@ -212,8 +231,11 @@ void URPGGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorI
 			const bool bIsLocalExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
 			const bool bIsServerExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
 
-			const bool bClientShouldActivate = ActorInfo->IsLocallyControlled() && bIsLocalExecution;
-			const bool bServerShouldActivate = ActorInfo->IsNetAuthority() && bIsServerExecution;
+			const bool bIsLocallyControlled = ActorInfo->IsLocallyControlled();
+			const bool bIsAuthority = ActorInfo->IsNetAuthority();
+
+			const bool bClientShouldActivate = bIsLocallyControlled && bIsLocalExecution;
+			const bool bServerShouldActivate = bIsAuthority && bIsServerExecution;
 
 			if (bClientShouldActivate || bServerShouldActivate)
 			{

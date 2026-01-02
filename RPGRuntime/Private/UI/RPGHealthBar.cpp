@@ -16,9 +16,6 @@
  * ========================= */
 const FName URPGHealthBar::Param_HealthCurrent(TEXT("Health_Current"));
 const FName URPGHealthBar::Param_HealthUpdated(TEXT("Health_Updated"));
-const FName URPGHealthBar::Param_AnimateDamage(TEXT("Animate_Damage"));
-const FName URPGHealthBar::Param_AnimateDamageFade(TEXT("Animate_DamageFade"));
-const FName URPGHealthBar::Param_GlowAlphaChange(TEXT("Animate_Glow_AlphaChange"));
 
 URPGHealthBar::URPGHealthBar(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -82,15 +79,6 @@ void URPGHealthBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		CurrentVisualHealthNorm = TargetHealthNorm;
 		UpdateVisuals(CurrentVisualHealthNorm);
 
-		// Reset damage animation flags (chuẩn Lyra)
-		for (UMaterialInstanceDynamic* MID : { BarFillMID.Get(), BarBorderMID.Get(), BarGlowMID.Get() })
-		{
-			if (MID)
-			{
-				MID->SetScalarParameterValue(Param_AnimateDamage, 0.0f);
-			}
-		}
-
 		bIsAnimating = false;
 	}
 }
@@ -119,23 +107,14 @@ void URPGHealthBar::UpdateHealthBar(float OldValueNorm, float NewValueNorm, bool
 	UpdateVisuals(TargetHealthNorm); // Update HealthNumber and Primary Bar immediately
 
 	// Damage feedback
+	// Damage feedback (Now handled via C++ interp only)
 	if (NewValueNorm < OldValueNorm)
 	{
-		if (OnDamagedAnimation && !IsAnimationPlaying(OnDamagedAnimation))
-		{
-			PlayAnimation(OnDamagedAnimation);
-		}
-
-		if (BarFillMID)
-		{
-			BarFillMID->SetScalarParameterValue(Param_AnimateDamage, 1.0f);
-		}
 	}
 
 	// Death
-	if (NewValueNorm <= 0.0f && OnEliminatedAnimation)
+	if (NewValueNorm <= 0.0f)
 	{
-		PlayAnimation(OnEliminatedAnimation);
 	}
 }
 
@@ -202,22 +181,7 @@ void URPGHealthBar::SetDynamicMaterials()
 
 void URPGHealthBar::ResetAnimatedState()
 {
-	static const FName Params[] =
-	{
-		TEXT("Animate_Damage"),
-		TEXT("Animate_DamageFade"),
-		TEXT("Animate_Glow_AlphaChange")
-	};
-
-	for (UMaterialInstanceDynamic* MID : { BarFillMID.Get(), BarBorderMID.Get(), BarGlowMID.Get() })
-	{
-		if (MID)
-		{
-			MID->SetScalarParameterValue(Param_AnimateDamage, 0.0f);
-			MID->SetScalarParameterValue(Param_AnimateDamageFade, 0.0f);
-			MID->SetScalarParameterValue(Param_GlowAlphaChange, 0.0f);
-		}
-	}
+	// No longer driving manual Lyra damage params to avoid material mismatch
 }
 
 /* =========================

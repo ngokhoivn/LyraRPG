@@ -71,6 +71,9 @@ public:
 
 	void TryActivateAbilitiesOnSpawn();
 
+	/** Resets Health, Mana, and Stamina to their max values. Used during respawn or full heals. */
+	void FullResetAttributes();
+
 	/** Gets the attribute set of the given class, creating it if it doesn't exist. */
 	const UAttributeSet* GetOrCreateAttributeSet(const TSubclassOf<UAttributeSet>& AttributeSetClass);
 

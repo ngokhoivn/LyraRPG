@@ -152,7 +152,6 @@ void URPGHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 				{
 					if (AbilitySet)
 					{
-						UE_LOG(LogRPG, Log, TEXT("Granting AbilitySet: %s to Pawn: %s"), *GetNameSafe(AbilitySet), *GetNameSafe(Pawn));
 						AbilitySet->GiveToAbilitySystem(RPGPS->GetRPGAbilitySystemComponent(), &GlobalAbilitySetHandles.AddDefaulted_GetRef(), this);
 					}
 				}
@@ -233,7 +232,6 @@ void URPGHeroComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
-	UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Start. InputComponent: %s"), *GetNameSafe(PlayerInputComponent));
 	check(PlayerInputComponent);
 
 	const APawn* Pawn = GetPawn<APawn>();
@@ -265,7 +263,6 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 	if (const URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 	{
 		const URPGPawnData* PawnData = PawnExtComp->GetPawnData<URPGPawnData>();
-		UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: PawnData: %s"), *GetNameSafe(PawnData));
 
 		if (PawnData)
 		{
@@ -278,7 +275,6 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 					if (UInputMappingContext* IMC = URPGAssetManager::GetAsset(Mapping.InputMapping))
 					{
 						Subsystem->AddMappingContext(IMC, Mapping.Priority);
-						UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Added Mapping Context: %s"), *GetNameSafe(IMC));
 					}
 				}
 
@@ -287,12 +283,10 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 
 				if (RPGIC)
 				{
-					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Binding Ability Actions to URPGInputComponent"));
 					RPGIC->AddInputMappings(InputConfig, Subsystem);
 
 					TArray<uint32> BindHandles;
 					RPGIC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Bound %d Ability Actions (via URPGInputComponent)"), BindHandles.Num());
 
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ false);
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, /*bLogIfNotFound=*/ false);
@@ -318,7 +312,6 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 							BoundCount++;
 						}
 					}
-					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Bound %d Ability Actions (via EnhancedInputComponent fallback)"), BoundCount);
 
 					// Helper for native binds
 					auto BindNative = [&](const FGameplayTag& Tag, auto Func)
@@ -362,7 +355,6 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 
 void URPGHeroComponent::AddAdditionalInputConfig(const URPGInputConfig* InputConfig)
 {
-	UE_LOG(LogRPG, Log, TEXT("AddAdditionalInputConfig: Entry. Config: %s"), *GetNameSafe(InputConfig));
 	TArray<uint32> BindHandles;
 
 	const APawn* Pawn = GetPawn<APawn>();
@@ -410,7 +402,6 @@ void URPGHeroComponent::AddAdditionalInputConfig(const URPGInputConfig* InputCon
 		if (RPGIC)
 		{
 			RPGIC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-			UE_LOG(LogRPG, Log, TEXT("AddAdditionalInputConfig: Bound abilities via URPGInputComponent"));
 		}
 		else if (EnhancedIC)
 		{
@@ -440,7 +431,6 @@ bool URPGHeroComponent::IsReadyToBindInputs() const
 
 void URPGHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	UE_LOG(LogRPG, Log, TEXT("Input_AbilityInputTagPressed: Tag: %s"), *InputTag.ToString());
 	if (const APawn* Pawn = GetPawn<APawn>())
 	{
 		if (const URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))

@@ -38,6 +38,8 @@ void FRPGGameplayTags::InitializeNativeTags()
 	GameplayTags.Message_Attribute_HealthChanged = RPGGameplayTags::Message_Attribute_HealthChanged;
 	GameplayTags.Message_Attribute_ManaChanged = RPGGameplayTags::Message_Attribute_ManaChanged;
 	GameplayTags.Message_Attribute_StaminaChanged = RPGGameplayTags::Message_Attribute_StaminaChanged;
+	GameplayTags.Message_Respawn_Duration = RPGGameplayTags::Message_Respawn_Duration;
+	GameplayTags.Message_Respawn_Completed = RPGGameplayTags::Message_Respawn_Completed;
 
 	// Status
 	GameplayTags.Status_Weapon_Equipped = Manager.AddNativeGameplayTag(TEXT("RPG.Status.Weapon.Equipped"), TEXT("Weapon is currently equipped"));
@@ -124,6 +126,11 @@ namespace RPGGameplayTags
 
 	// When extending Lyra, you can create your own movement modes but you need to update GetCustomMovementModeTagMap()
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Movement_Mode_Custom, "Movement.Mode.Custom", "This is invalid and should be replaced with custom tags.  See LyraGameplayTags::CustomMovementModeTagMap.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Type_Status_Death, "Ability.Type.Status.Death", "Tag used to find death abilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Message_Respawn_Duration, "Ability.Respawn.Duration", "Message with respawn duration.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Message_Respawn_Completed, "Ability.Respawn.Completed", "Message when respawn is completed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(HUD_Slot_Reticle, "HUD.Slot.Reticle", "HUD slot for the reticle/respawn timer.");
 
 	// Unreal Movement Modes
 	const TMap<uint8, FGameplayTag> MovementModeTagMap =

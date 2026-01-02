@@ -118,9 +118,6 @@ void URPGAbilitySet::GiveToAbilitySystem(URPGAbilitySystemComponent* RPGASC, FRP
 
 		const FGameplayAbilitySpecHandle AbilitySpecHandle = RPGASC->GiveAbility(AbilitySpec);
 
-		UE_LOG(LogRPG, Log, TEXT("RPGAbilitySet::GiveToAbilitySystem: Granted [Ability: %s] [Level: %d] [Tag: %s] to ASC on %s"), 
-			*GetNameSafe(AbilityCDO), AbilityToGrant.AbilityLevel, *AbilityToGrant.InputTag.ToString(), *GetNameSafe(RPGASC->GetOwner()));
-
 		if (OutGrantedHandles)
 		{
 			OutGrantedHandles->AddAbilitySpecHandle(AbilitySpecHandle);

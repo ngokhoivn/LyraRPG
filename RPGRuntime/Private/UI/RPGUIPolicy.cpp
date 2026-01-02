@@ -56,6 +56,11 @@ void URPGUIPolicy::NotifyPlayerDestroyed(UCommonLocalPlayer* LocalPlayer)
 
 void URPGUIPolicy::CreateLayoutWidget(UCommonLocalPlayer* LocalPlayer)
 {
+	if (RootLayouts.Contains(LocalPlayer))
+	{
+		return;
+	}
+
 	if (APlayerController* PC = LocalPlayer->GetPlayerController(GetWorld()))
 	{
 		if (LayoutClass.IsNull())
@@ -66,7 +71,7 @@ void URPGUIPolicy::CreateLayoutWidget(UCommonLocalPlayer* LocalPlayer)
 
 		if (UClass* LayoutWidgetClass = LayoutClass.LoadSynchronous())
 		{
-			UE_LOG(LogRPG, Verbose, TEXT("RPGUIPolicy: Creating Root Layout [%s] for Player [%s]"), *GetNameSafe(LayoutWidgetClass), *GetNameSafe(LocalPlayer));
+			UE_LOG(LogRPG, Display, TEXT("RPGUIPolicy: Creating Root Layout [%s] for Player [%s]"), *GetNameSafe(LayoutWidgetClass), *GetNameSafe(LocalPlayer));
 			URPGPrimaryGameLayout* Layout = CreateWidget<URPGPrimaryGameLayout>(PC, LayoutWidgetClass);
 			RootLayouts.Add(LocalPlayer, Layout);
 
@@ -79,6 +84,15 @@ void URPGUIPolicy::CreateLayoutWidget(UCommonLocalPlayer* LocalPlayer)
 	}
 	else
 	{
-		UE_LOG(LogRPG, Warning, TEXT("RPGUIPolicy: PlayerController not ready yet for Player [%s]. Layout creation skipped."), *GetNameSafe(LocalPlayer));
+		UE_LOG(LogRPG, Warning, TEXT("RPGUIPolicy: PlayerController not ready yet for Player [%s]. Retrying layout creation in 0.1s."), *GetNameSafe(LocalPlayer));
+		
+		// Use a local lambda timer to retry
+		FTimerHandle RetryTimerHandle;
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().SetTimer(RetryTimerHandle, [this, LocalPlayer]() {
+				CreateLayoutWidget(LocalPlayer);
+			}, 0.1f, false);
+		}
 	}
 }
