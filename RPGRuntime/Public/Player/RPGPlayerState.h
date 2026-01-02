@@ -139,9 +139,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "RPG|PlayerState")
 	TObjectPtr<URPGAbilitySystemComponent> AbilitySystemComponent;
 
-	// Health attribute set used by this actor.
+	// Attribute set used by this actor.
 	UPROPERTY()
-	TObjectPtr<const class URPGHealthSet> HealthSet;
+	TObjectPtr<const class URPGAttributeSet> AttributeSet;
 
 	UPROPERTY(Replicated)
 	ERPGPlayerConnectionType MyPlayerConnectionType;

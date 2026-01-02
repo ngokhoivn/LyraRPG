@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystem/RPGAbilitySet.h"
 #include "RPGWeaponInstance.generated.h"
 
 class AActor;
@@ -121,6 +122,9 @@ private:
 
     UPROPERTY()
     TObjectPtr<class URPGEquipmentDefinition> EquipmentDefinition;
+
+    // Handles to the granted abilities and effects
+    FRPGAbilitySet_GrantedHandles GrantedHandles;
 
     bool bIsEquipped = false;
 };

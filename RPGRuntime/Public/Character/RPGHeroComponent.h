@@ -7,6 +7,7 @@
 #include "GameplayAbilitySpecHandle.h"
 #include "InputMappingContext.h"
 #include "GameMode/RPGGameFeatureAction_AddInputContextMapping.h"
+#include "AbilitySystem/RPGAbilitySet.h"
 #include "RPGHeroComponent.generated.h"
 
 class UInputMappingContext;
@@ -99,6 +100,10 @@ protected:
 
 	/** Spec handle for the last ability to set a camera mode. */
 	FGameplayAbilitySpecHandle AbilityCameraModeOwningSpecHandle;
+
+	/** Global ability sets granted to this pawn. */
+	UPROPERTY()
+	TArray<FRPGAbilitySet_GrantedHandles> GlobalAbilitySetHandles;
 
 	/** True when player input bindings have been applied, will never be true for non - players */
 	bool bReadyToBindInputs;

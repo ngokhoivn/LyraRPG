@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
+#include "AttributeSet.h"
 #include "RPGPawnData.generated.h"
 
 class APawn;
@@ -45,4 +46,12 @@ public:
 	// Default camera mode used by player controlled pawns.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Camera")
 	TSubclassOf<URPGCameraMode> DefaultCameraMode;
+
+	// Attribute sets to grant to this pawn's ability system.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes")
+	TArray<TSubclassOf<class UAttributeSet>> Attributes;
+
+	// Equipment to grant to this pawn at startup.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Equipment")
+	TArray<TSubclassOf<class URPGEquipmentDefinition>> InitialEquipment;
 };

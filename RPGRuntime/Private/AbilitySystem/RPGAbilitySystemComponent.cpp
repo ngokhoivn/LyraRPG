@@ -4,6 +4,7 @@
 #include "AbilitySystem/RPGAbilityTagRelationshipMapping.h"
 #include "AbilitySystem/RPGGameplayAbility.h"
 #include "System/RPGLogChannels.h"
+#include "AttributeSet.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 
@@ -132,6 +133,7 @@ void URPGAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& Inpu
 		{
 			if (AbilitySpec.Ability && (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)))
 			{
+				UE_LOG(LogRPG, Log, TEXT("AbilityInputTagPressed: Matching tag %s with ability %s"), *InputTag.ToString(), *GetNameSafe(AbilitySpec.Ability));
 				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
 			}
@@ -192,6 +194,7 @@ void URPGAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGame
 		{
 			if (AbilitySpec->Ability)
 			{
+				UE_LOG(LogRPG, Log, TEXT("ProcessAbilityInput: Found Ability %s for Input"), *GetNameSafe(AbilitySpec->Ability));
 				AbilitySpec->InputPressed = true;
 
 				if (AbilitySpec->IsActive())
@@ -385,4 +388,21 @@ void URPGAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpec
 	{
 		OutTargetDataHandle = ReplicatedData->TargetData;
 	}
+}
+
+const UAttributeSet* URPGAbilitySystemComponent::GetOrCreateAttributeSet(const TSubclassOf<UAttributeSet>& AttributeSetClass)
+{
+	check(AttributeSetClass);
+
+	for (UAttributeSet* Set : GetSpawnedAttributes())
+	{
+		if (Set && Set->IsA(AttributeSetClass))
+		{
+			return Set;
+		}
+	}
+
+	UAttributeSet* AttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
+	AddAttributeSetSubobject(AttributeSet);
+	return AttributeSet;
 }

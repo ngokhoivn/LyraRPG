@@ -29,6 +29,7 @@ public:
 	// Stat Tags
 	FGameplayTag Stat_Health;
 	FGameplayTag Stat_Mana;
+	FGameplayTag Stat_Stamina;
 	FGameplayTag Stat_Attack;
 	FGameplayTag Stat_Defense;
 
@@ -41,15 +42,30 @@ public:
 	FGameplayTag Message_Inventory_StackChanged;
 	FGameplayTag Message_QuickBar_SlotsChanged;
 	FGameplayTag Message_QuickBar_ActiveIndexChanged;
+	FGameplayTag Message_Attribute_HealthChanged;
+	FGameplayTag Message_Attribute_ManaChanged;
+	FGameplayTag Message_Attribute_StaminaChanged;
 
 	// Cosmetic Status Tags
 	FGameplayTag Status_Weapon_Equipped;
+	FGameplayTag Status_Death;
+	FGameplayTag Status_Death_Dying;
+	FGameplayTag Status_Death_Dead;
+
+	// Gameplay Event Tags
+	FGameplayTag GameplayEvent_Death;
 
 	// Init State Tags
 	FGameplayTag InitState_Spawned;
 	FGameplayTag InitState_DataAvailable;
 	FGameplayTag InitState_DataInitialized;
 	FGameplayTag InitState_GameplayReady;
+
+	// UI Layer Tags
+	FGameplayTag UI_Layer_Game;
+	FGameplayTag UI_Layer_GameMenu;
+	FGameplayTag UI_Layer_Menu;
+	FGameplayTag UI_Layer_Modal;
 
 	// Input Tags
 	FGameplayTag InputTag_Move;
@@ -97,6 +113,15 @@ namespace RPGGameplayTags
 
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cheat_GodMode);
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cheat_UnlimitedHealth);
+
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Message_Attribute_HealthChanged);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Message_Attribute_ManaChanged);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Message_Attribute_StaminaChanged);
+
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(UI_Layer_Game);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(UI_Layer_GameMenu);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(UI_Layer_Menu);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(UI_Layer_Modal);
 
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Crouching);
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_AutoRunning);

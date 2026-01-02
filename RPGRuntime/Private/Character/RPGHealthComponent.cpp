@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Character/RPGHealthComponent.h"
-#include "AbilitySystem/Attributes/RPGHealthSet.h"
+#include "AbilitySystem/Attributes/RPGAttributeSet.h"
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "System/RPGGameplayTags.h"
 #include "System/RPGLogChannels.h"
@@ -20,7 +20,7 @@ URPGHealthComponent::URPGHealthComponent(const FObjectInitializer& ObjectInitial
 	SetIsReplicatedByDefault(true);
 
 	AbilitySystemComponent = nullptr;
-	HealthSet = nullptr;
+	AttributeSet = nullptr;
 	DeathState = ERPGDeathState::NotDead;
 }
 
@@ -56,37 +56,43 @@ void URPGHealthComponent::InitializeWithAbilitySystem(URPGAbilitySystemComponent
 		return;
 	}
 
-	HealthSet = AbilitySystemComponent->GetSet<URPGHealthSet>();
-	if (!HealthSet)
+	AttributeSet = AbilitySystemComponent->GetSet<URPGAttributeSet>();
+	if (!AttributeSet)
 	{
-		UE_LOG(LogRPG, Error, TEXT("RPGHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."), *GetNameSafe(Owner));
+		UE_LOG(LogRPG, Error, TEXT("RPGHealthComponent: Cannot initialize health component for owner [%s] with NULL attribute set on the ability system."), *GetNameSafe(Owner));
 		return;
 	}
 
 	// Register to listen for attribute changes.
-	HealthSet->OnHealthChanged.AddUObject(this, &ThisClass::HandleHealthChanged);
-	HealthSet->OnMaxHealthChanged.AddUObject(this, &ThisClass::HandleMaxHealthChanged);
-	HealthSet->OnOutOfHealth.AddUObject(this, &ThisClass::HandleOutOfHealth);
+	AttributeSet->OnHealthChanged.AddUObject(this, &ThisClass::HandleHealthChanged);
+	AttributeSet->OnMaxHealthChanged.AddUObject(this, &ThisClass::HandleMaxHealthChanged);
+	AttributeSet->OnStaminaChanged.AddUObject(this, &ThisClass::HandleStaminaChanged);
+	AttributeSet->OnMaxStaminaChanged.AddUObject(this, &ThisClass::HandleMaxStaminaChanged);
+	AttributeSet->OnOutOfHealth.AddUObject(this, &ThisClass::HandleOutOfHealth);
 
 	// Clear tags
 	ClearGameplayTags();
 
-	OnHealthChanged.Broadcast(this, HealthSet->GetHealth(), HealthSet->GetHealth(), nullptr);
-	OnMaxHealthChanged.Broadcast(this, HealthSet->GetMaxHealth(), HealthSet->GetMaxHealth(), nullptr);
+	OnHealthChangedDelegate.Broadcast(this, AttributeSet->GetHealth(), AttributeSet->GetHealth(), nullptr);
+	OnMaxHealthChangedDelegate.Broadcast(this, AttributeSet->GetMaxHealth(), AttributeSet->GetMaxHealth(), nullptr);
+	OnStaminaChangedDelegate.Broadcast(this, AttributeSet->GetStamina(), AttributeSet->GetStamina(), nullptr);
+	OnMaxStaminaChangedDelegate.Broadcast(this, AttributeSet->GetMaxStamina(), AttributeSet->GetMaxStamina(), nullptr);
 }
 
 void URPGHealthComponent::UninitializeFromAbilitySystem()
 {
 	ClearGameplayTags();
 
-	if (HealthSet)
+	if (AttributeSet)
 	{
-		HealthSet->OnHealthChanged.RemoveAll(this);
-		HealthSet->OnMaxHealthChanged.RemoveAll(this);
-		HealthSet->OnOutOfHealth.RemoveAll(this);
+		AttributeSet->OnHealthChanged.RemoveAll(this);
+		AttributeSet->OnMaxHealthChanged.RemoveAll(this);
+		AttributeSet->OnStaminaChanged.RemoveAll(this);
+		AttributeSet->OnMaxStaminaChanged.RemoveAll(this);
+		AttributeSet->OnOutOfHealth.RemoveAll(this);
 	}
 
-	HealthSet = nullptr;
+	AttributeSet = nullptr;
 	AbilitySystemComponent = nullptr;
 }
 
@@ -94,28 +100,28 @@ void URPGHealthComponent::ClearGameplayTags()
 {
 	if (AbilitySystemComponent)
 	{
-		// Stub: We need to define RPG specific tags for death states
-		// AbilitySystemComponent->SetLooseGameplayTagCount(RPGGameplayTags::Status_Death_Dying, 0);
-		// AbilitySystemComponent->SetLooseGameplayTagCount(RPGGameplayTags::Status_Death_Dead, 0);
+		const FRPGGameplayTags& GameplayTags = FRPGGameplayTags::Get();
+		AbilitySystemComponent->SetLooseGameplayTagCount(GameplayTags.Status_Death_Dying, 0);
+		AbilitySystemComponent->SetLooseGameplayTagCount(GameplayTags.Status_Death_Dead, 0);
 	}
 }
 
 float URPGHealthComponent::GetHealth() const
 {
-	return (HealthSet ? HealthSet->GetHealth() : 0.0f);
+	return (AttributeSet ? AttributeSet->GetHealth() : 0.0f);
 }
 
 float URPGHealthComponent::GetMaxHealth() const
 {
-	return (HealthSet ? HealthSet->GetMaxHealth() : 0.0f);
+	return (AttributeSet ? AttributeSet->GetMaxHealth() : 0.0f);
 }
 
 float URPGHealthComponent::GetHealthNormalized() const
 {
-	if (HealthSet)
+	if (AttributeSet)
 	{
-		const float Health = HealthSet->GetHealth();
-		const float MaxHealth = HealthSet->GetMaxHealth();
+		const float Health = AttributeSet->GetHealth();
+		const float MaxHealth = AttributeSet->GetMaxHealth();
 
 		return ((MaxHealth > 0.0f) ? (Health / MaxHealth) : 0.0f);
 	}
@@ -123,14 +129,47 @@ float URPGHealthComponent::GetHealthNormalized() const
 	return 0.0f;
 }
 
+float URPGHealthComponent::GetStamina() const
+{
+	return (AttributeSet ? AttributeSet->GetStamina() : 0.0f);
+}
+
+float URPGHealthComponent::GetMaxStamina() const
+{
+	return (AttributeSet ? AttributeSet->GetMaxStamina() : 0.0f);
+}
+
+float URPGHealthComponent::GetStaminaNormalized() const
+{
+	if (AttributeSet)
+	{
+		const float Stamina = AttributeSet->GetStamina();
+		const float MaxStamina = AttributeSet->GetMaxStamina();
+
+		return ((MaxStamina > 0.0f) ? (Stamina / MaxStamina) : 0.0f);
+	}
+
+	return 0.0f;
+}
+
 void URPGHealthComponent::HandleHealthChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue)
 {
-	OnHealthChanged.Broadcast(this, OldValue, NewValue, DamageInstigator);
+	OnHealthChangedDelegate.Broadcast(this, OldValue, NewValue, DamageInstigator);
 }
 
 void URPGHealthComponent::HandleMaxHealthChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue)
 {
-	OnMaxHealthChanged.Broadcast(this, OldValue, NewValue, DamageInstigator);
+	OnMaxHealthChangedDelegate.Broadcast(this, OldValue, NewValue, DamageInstigator);
+}
+
+void URPGHealthComponent::HandleStaminaChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue)
+{
+	OnStaminaChangedDelegate.Broadcast(this, OldValue, NewValue, DamageInstigator);
+}
+
+void URPGHealthComponent::HandleMaxStaminaChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue)
+{
+	OnMaxStaminaChangedDelegate.Broadcast(this, OldValue, NewValue, DamageInstigator);
 }
 
 void URPGHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue)
@@ -138,10 +177,12 @@ void URPGHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor* Da
 #if WITH_SERVER_CODE
 	if (AbilitySystemComponent && DamageEffectSpec)
 	{
+		const FRPGGameplayTags& GameplayTags = FRPGGameplayTags::Get();
+
 		// Send the "GameplayEvent.Death" gameplay event through the owner's ability system.
 		{
 			FGameplayEventData Payload;
-			// Payload.EventTag = RPGGameplayTags::GameplayEvent_Death;
+			Payload.EventTag = GameplayTags.GameplayEvent_Death;
 			Payload.Instigator = DamageInstigator;
 			Payload.Target = AbilitySystemComponent->GetAvatarActor();
 			Payload.OptionalObject = DamageEffectSpec->Def;
@@ -200,7 +241,7 @@ void URPGHealthComponent::StartDeath()
 
 	if (AbilitySystemComponent)
 	{
-		// AbilitySystemComponent->SetLooseGameplayTagCount(RPGGameplayTags::Status_Death_Dying, 1);
+		AbilitySystemComponent->SetLooseGameplayTagCount(FRPGGameplayTags::Get().Status_Death_Dying, 1);
 	}
 
 	AActor* Owner = GetOwner();
@@ -222,7 +263,7 @@ void URPGHealthComponent::FinishDeath()
 
 	if (AbilitySystemComponent)
 	{
-		// AbilitySystemComponent->SetLooseGameplayTagCount(RPGGameplayTags::Status_Death_Dead, 1);
+		AbilitySystemComponent->SetLooseGameplayTagCount(FRPGGameplayTags::Get().Status_Death_Dead, 1);
 	}
 
 	AActor* Owner = GetOwner();
@@ -237,9 +278,6 @@ void URPGHealthComponent::DamageSelfDestruct(bool bFellOutOfWorld)
 {
 	if ((DeathState == ERPGDeathState::NotDead) && AbilitySystemComponent)
 	{
-		// This should be implemented by applying a GE that deals massive damage
-		// For now we just call StartDeath as a shortcut if preferred, 
-		// but Lyra does it via GE for proper GAS flow.
 		StartDeath();
 		FinishDeath();
 	}

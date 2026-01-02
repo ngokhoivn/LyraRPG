@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AttributeSet.h"
 #include "NativeGameplayTags.h"
 #include "RPGAbilityTypes.h"
 #include "RPGAbilitySystemComponent.generated.h"
@@ -68,6 +70,9 @@ public:
 	void GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const;
 
 	void TryActivateAbilitiesOnSpawn();
+
+	/** Gets the attribute set of the given class, creating it if it doesn't exist. */
+	const UAttributeSet* GetOrCreateAttributeSet(const TSubclassOf<UAttributeSet>& AttributeSetClass);
 
 protected:
 

@@ -155,6 +155,11 @@ void ARPGPlayerController::PostProcessInput(const float DeltaTime, const bool bG
 	{
 		RPGASC->ProcessAbilityInput(DeltaTime, bGamePaused);
 	}
+	else
+	{
+		// Optional: Basic log to check if ASC is missing
+		// UE_LOG(LogRPG, Warning, TEXT("ARPGPlayerController::PostProcessInput: RPGASC is NULL!"));
+	}
 
 	Super::PostProcessInput(DeltaTime, bGamePaused);
 }

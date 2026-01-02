@@ -2,15 +2,14 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "Components/GameFrameworkComponent.h"
+#include "GameplayEffect.h"
 #include "RPGHealthComponent.generated.h"
 
 class URPGHealthComponent;
 class URPGAbilitySystemComponent;
-class URPGHealthSet;
-class UObject;
-struct FFrame;
-struct FGameplayEffectSpec;
+class URPGAttributeSet;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRPGHealth_DeathEvent, AActor*, OwningActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FRPGHealth_AttributeChanged, URPGHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
@@ -32,7 +31,7 @@ enum class ERPGDeathState : uint8
 /**
  * URPGHealthComponent
  *
- *	An actor component used to handle anything related to health.
+ *	An actor component used to handle anything related to health and stamina.
  *  Standalone version of LyraHealthComponent.
  */
 UCLASS(Blueprintable, Meta=(BlueprintSpawnableComponent))
@@ -68,6 +67,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPG|Health")
 	float GetHealthNormalized() const;
 
+	// Returns the current stamina value.
+	UFUNCTION(BlueprintCallable, Category = "RPG|Stamina")
+	float GetStamina() const;
+
+	// Returns the current maximum stamina value.
+	UFUNCTION(BlueprintCallable, Category = "RPG|Stamina")
+	float GetMaxStamina() const;
+
+	// Returns the current stamina in the range [0.0, 1.0].
+	UFUNCTION(BlueprintCallable, Category = "RPG|Stamina")
+	float GetStaminaNormalized() const;
+
 	UFUNCTION(BlueprintCallable, Category = "RPG|Health")
 	ERPGDeathState GetDeathState() const { return DeathState; }
 
@@ -87,11 +98,19 @@ public:
 
 	// Delegate fired when the health value has changed.
 	UPROPERTY(BlueprintAssignable)
-	FRPGHealth_AttributeChanged OnHealthChanged;
+	FRPGHealth_AttributeChanged OnHealthChangedDelegate;
 
 	// Delegate fired when the max health value has changed.
 	UPROPERTY(BlueprintAssignable)
-	FRPGHealth_AttributeChanged OnMaxHealthChanged;
+	FRPGHealth_AttributeChanged OnMaxHealthChangedDelegate;
+
+	// Delegate fired when the stamina value has changed.
+	UPROPERTY(BlueprintAssignable)
+	FRPGHealth_AttributeChanged OnStaminaChangedDelegate;
+
+	// Delegate fired when the max stamina value has changed.
+	UPROPERTY(BlueprintAssignable)
+	FRPGHealth_AttributeChanged OnMaxStaminaChangedDelegate;
 
 	// Delegate fired when the death sequence has started.
 	UPROPERTY(BlueprintAssignable)
@@ -109,6 +128,8 @@ protected:
 
 	virtual void HandleHealthChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue);
 	virtual void HandleMaxHealthChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue);
+	virtual void HandleStaminaChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue);
+	virtual void HandleMaxStaminaChanged(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue);
 	virtual void HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec* DamageEffectSpec, float DamageMagnitude, float OldValue, float NewValue);
 
 	UFUNCTION()
@@ -120,9 +141,9 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<URPGAbilitySystemComponent> AbilitySystemComponent;
 
-	// Health set used by this component.
+	// Attribute set used by this component.
 	UPROPERTY(Transient)
-	TObjectPtr<const URPGHealthSet> HealthSet;
+	TObjectPtr<const URPGAttributeSet> AttributeSet;
 
 	// Replicated state used to handle dying.
 	UPROPERTY(ReplicatedUsing = OnRep_DeathState)

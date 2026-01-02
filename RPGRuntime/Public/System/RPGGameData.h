@@ -19,5 +19,21 @@ class RPGRUNTIME_API URPGGameData : public UPrimaryDataAsset
 public:
 	URPGGameData();
 
-	// Add global gameplay tags or other static data here if needed.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultAttributes")
+	float DefaultHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultAttributes")
+	float DefaultMaxHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultAttributes")
+	float DefaultMana = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultAttributes")
+	float DefaultMaxMana = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultAttributes")
+	float DefaultStamina = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultAttributes")
+	float DefaultMaxStamina = 100.0f;
 };

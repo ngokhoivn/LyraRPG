@@ -3,8 +3,11 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Character.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "Engine/World.h"
 #include "Net/UnrealNetwork.h"
+#include "Character/RPGPawnExtensionComponent.h"
+#include "System/RPGLogChannels.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RPGWeaponInstance)
 
@@ -50,6 +53,33 @@ void URPGWeaponInstance::Equip()
 
     SpawnWeaponActors();
     ActivateAnimLayer(true);
+
+    // Grant abilities
+    if (APawn* Pawn = GetPawn())
+    {
+        // BUG FIX: ASC nằm trên PlayerState, không phải trên Pawn. 
+        // Phải dùng PawnExtensionComponent hoặc casting Pawn sang IAbilitySystemInterface.
+        URPGAbilitySystemComponent* RPGASC = nullptr;
+        if (URPGPawnExtensionComponent* PawnExtComp = Pawn->FindComponentByClass<URPGPawnExtensionComponent>())
+        {
+            RPGASC = PawnExtComp->GetRPGAbilitySystemComponent();
+        }
+
+        if (RPGASC)
+        {
+            UE_LOG(LogRPG, Log, TEXT("RPGWeaponInstance::Equip: Found ASC on %s, granting %d ability sets."), *GetNameSafe(Pawn), EquipmentDefinition ? EquipmentDefinition->AbilitySetsToGrant.Num() : 0);
+            if (EquipmentDefinition)
+            {
+                for (const URPGAbilitySet* AbilitySet : EquipmentDefinition->AbilitySetsToGrant)
+                {
+                    if (AbilitySet)
+                    {
+                        AbilitySet->GiveToAbilitySystem(RPGASC, &GrantedHandles, this);
+                    }
+                }
+            }
+        }
+    }
     
     bIsEquipped = true;
     K2_OnEquipped();
@@ -58,6 +88,15 @@ void URPGWeaponInstance::Equip()
 void URPGWeaponInstance::Unequip()
 {
     if (!bIsEquipped) return;
+
+    // Remove granted abilities
+    if (APawn* Pawn = GetPawn())
+    {
+        if (URPGAbilitySystemComponent* RPGASC = Pawn->FindComponentByClass<URPGAbilitySystemComponent>())
+        {
+            GrantedHandles.TakeFromAbilitySystem(RPGASC);
+        }
+    }
 
     ActivateAnimLayer(false);
     DestroyWeaponActors();

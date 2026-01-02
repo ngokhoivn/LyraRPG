@@ -22,6 +22,7 @@ void FRPGGameplayTags::InitializeNativeTags()
 	// Stats
 	GameplayTags.Stat_Health = Manager.AddNativeGameplayTag(TEXT("RPG.Stat.Health"), TEXT("Health statistic"));
 	GameplayTags.Stat_Mana = Manager.AddNativeGameplayTag(TEXT("RPG.Stat.Mana"), TEXT("Mana statistic"));
+	GameplayTags.Stat_Stamina = Manager.AddNativeGameplayTag(TEXT("RPG.Stat.Stamina"), TEXT("Stamina statistic"));
 	GameplayTags.Stat_Attack = Manager.AddNativeGameplayTag(TEXT("RPG.Stat.Attack"), TEXT("Attack power statistic"));
 	GameplayTags.Stat_Defense = Manager.AddNativeGameplayTag(TEXT("RPG.Stat.Defense"), TEXT("Defense statistic"));
 
@@ -34,9 +35,18 @@ void FRPGGameplayTags::InitializeNativeTags()
 	GameplayTags.Message_Inventory_StackChanged = Manager.AddNativeGameplayTag(TEXT("RPG.Inventory.Message.StackChanged"), TEXT("Inventory stack changed message"));
 	GameplayTags.Message_QuickBar_SlotsChanged = Manager.AddNativeGameplayTag(TEXT("RPG.QuickBar.Message.SlotsChanged"), TEXT("QuickBar slots changed message"));
 	GameplayTags.Message_QuickBar_ActiveIndexChanged = Manager.AddNativeGameplayTag(TEXT("RPG.QuickBar.Message.ActiveIndexChanged"), TEXT("QuickBar active index changed message"));
+	GameplayTags.Message_Attribute_HealthChanged = RPGGameplayTags::Message_Attribute_HealthChanged;
+	GameplayTags.Message_Attribute_ManaChanged = RPGGameplayTags::Message_Attribute_ManaChanged;
+	GameplayTags.Message_Attribute_StaminaChanged = RPGGameplayTags::Message_Attribute_StaminaChanged;
 
 	// Status
 	GameplayTags.Status_Weapon_Equipped = Manager.AddNativeGameplayTag(TEXT("RPG.Status.Weapon.Equipped"), TEXT("Weapon is currently equipped"));
+	GameplayTags.Status_Death = RPGGameplayTags::Status_Death;
+	GameplayTags.Status_Death_Dying = RPGGameplayTags::Status_Death_Dying;
+	GameplayTags.Status_Death_Dead = RPGGameplayTags::Status_Death_Dead;
+
+	// Gameplay Events
+	GameplayTags.GameplayEvent_Death = RPGGameplayTags::GameplayEvent_Death;
 
 	// Map members to namespace tags for backward compatibility
 	GameplayTags.InitState_Spawned = RPGGameplayTags::InitState_Spawned;
@@ -49,6 +59,12 @@ void FRPGGameplayTags::InitializeNativeTags()
 	GameplayTags.InputTag_Look_Stick = RPGGameplayTags::InputTag_Look_Stick;
 	GameplayTags.InputTag_Crouch = RPGGameplayTags::InputTag_Crouch;
 	GameplayTags.InputTag_AutoRun = RPGGameplayTags::InputTag_AutoRun;
+
+	// UI Layers
+	GameplayTags.UI_Layer_Game = RPGGameplayTags::UI_Layer_Game;
+	GameplayTags.UI_Layer_GameMenu = RPGGameplayTags::UI_Layer_GameMenu;
+	GameplayTags.UI_Layer_Menu = RPGGameplayTags::UI_Layer_Menu;
+	GameplayTags.UI_Layer_Modal = RPGGameplayTags::UI_Layer_Modal;
 }
 
 namespace RPGGameplayTags
@@ -83,6 +99,15 @@ namespace RPGGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Cheat_GodMode, "Cheat.GodMode", "GodMode cheat is active on the owner.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Cheat_UnlimitedHealth, "Cheat.UnlimitedHealth", "UnlimitedHealth cheat is active on the owner.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Message_Attribute_HealthChanged, "Message.Attribute.HealthChanged", "Message UI for health changed");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Message_Attribute_ManaChanged, "Message.Attribute.ManaChanged", "Message UI for mana changed");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Message_Attribute_StaminaChanged, "Message.Attribute.StaminaChanged", "Message UI for stamina changed");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(UI_Layer_Game, "UI.Layer.Game", "Game layer (HUD)");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(UI_Layer_GameMenu, "UI.Layer.GameMenu", "Game menu layer (Inventory)");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(UI_Layer_Menu, "UI.Layer.Menu", "Main menu layer (Settings)");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(UI_Layer_Modal, "UI.Layer.Modal", "Modal layer (Pop-ups)");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Crouching, "Status.Crouching", "Target is crouching.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_AutoRunning, "Status.AutoRunning", "Target is auto-running.");

@@ -39,16 +39,17 @@ URPGAssetManager::URPGAssetManager()
 
 URPGAssetManager& URPGAssetManager::Get()
 {
-	check(GEngine);
-
-	if (URPGAssetManager* Singleton = Cast<URPGAssetManager>(GEngine->AssetManager))
+	if (GEngine && GEngine->AssetManager)
 	{
-		return *Singleton;
+		if (URPGAssetManager* Singleton = Cast<URPGAssetManager>(GEngine->AssetManager))
+		{
+			return *Singleton;
+		}
 	}
 
-	UE_LOG(LogRPG, Error, TEXT("URPGAssetManager is not set as the AssetManagerClassName in DefaultEngine.ini. Fallback to base class functionality."));
+	UE_LOG(LogRPG, Error, TEXT("URPGAssetManager is not yet initialized or set correctly in DefaultEngine.ini. Fallback to CDO."));
 
-	return *NewObject<URPGAssetManager>();
+	return *GetMutableDefault<URPGAssetManager>();
 }
 
 void URPGAssetManager::DumpLoadedAssets()

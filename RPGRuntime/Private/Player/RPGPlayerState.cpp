@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Player/RPGPlayerState.h"
-#include "AbilitySystem/Attributes/RPGHealthSet.h"
+#include "AbilitySystem/Attributes/RPGAttributeSet.h"
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "Character/RPGPawnData.h"
 #include "Character/RPGPawnExtensionComponent.h"
@@ -28,7 +28,7 @@ ARPGPlayerState::ARPGPlayerState(const FObjectInitializer& ObjectInitializer)
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	// These attribute sets will be detected by AbilitySystemComponent::InitializeComponent. Keeping a reference so that the sets don't get garbage collected before that.
-	HealthSet = CreateDefaultSubobject<URPGHealthSet>(TEXT("HealthSet"));
+	AttributeSet = CreateDefaultSubobject<URPGAttributeSet>(TEXT("AttributeSet"));
 
 	// AbilitySystemComponent needs to be updated at a high frequency.
 	SetNetUpdateFrequency(100.0f);
@@ -161,9 +161,14 @@ void ARPGPlayerState::SetPawnData(const URPGPawnData* InPawnData)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	PawnData = InPawnData;
 
-	// In the standalone version, we might want to handle giving abilities via PawnData differently
-	// or assume the PawnData has a list of AbilitySets to give.
-	
+	if (APawn* Pawn = GetPawn())
+	{
+		if (URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		{
+			PawnExtComp->HandlePlayerStateReplicated();
+		}
+	}
+
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_RPGAbilityReady);
 	
 	ForceNetUpdate();
@@ -171,6 +176,13 @@ void ARPGPlayerState::SetPawnData(const URPGPawnData* InPawnData)
 
 void ARPGPlayerState::OnRep_PawnData()
 {
+	if (APawn* Pawn = GetPawn())
+	{
+		if (URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		{
+			PawnExtComp->HandlePlayerStateReplicated();
+		}
+	}
 }
 
 void ARPGPlayerState::SetPlayerConnectionType(ERPGPlayerConnectionType NewType)

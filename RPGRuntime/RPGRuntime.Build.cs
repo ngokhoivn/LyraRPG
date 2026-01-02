@@ -30,6 +30,11 @@ public class RPGRuntime : ModuleRules
 			"EnhancedInput",
 			"AIModule",
 			"CommonLoadingScreen",
+			"CommonUI",
+			"CommonInput",
+			"CommonGame",
+			"UMG",
+			"FieldNotification",
 
 			// Lyra Core (Cho phép RPGAssetManager kế thừa từ LyraAssetManager)
 			"LyraGame"

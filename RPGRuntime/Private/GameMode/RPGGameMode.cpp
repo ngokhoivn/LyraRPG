@@ -232,6 +232,14 @@ void ARPGGameMode::HandleStartingNewPlayer_Implementation(APlayerController* New
 	if (IsExperienceLoaded())
 	{
 		Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+		if (const URPGPawnData* PawnData = GetPawnDataForController(NewPlayer))
+		{
+			if (ARPGPlayerState* RPGPS = NewPlayer->GetPlayerState<ARPGPlayerState>())
+			{
+				RPGPS->SetPawnData(PawnData);
+			}
+		}
 	}
 }
 

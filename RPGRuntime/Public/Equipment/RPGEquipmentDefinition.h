@@ -24,6 +24,10 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
     FText Description;
 
+    // Ability sets to grant when equipped
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
+    TArray<TObjectPtr<const class URPGAbilitySet>> AbilitySetsToGrant;
+
     // Create weapon instance
     UFUNCTION(BlueprintCallable, Category = "Equipment")
     URPGWeaponInstance* CreateWeaponInstance(UObject* Instigator) const;

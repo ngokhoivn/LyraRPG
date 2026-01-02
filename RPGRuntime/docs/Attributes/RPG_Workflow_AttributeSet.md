@@ -100,40 +100,86 @@ Tạo struct `FRPGAttributeChangedMessage` chứa: `Owner`, `NewValue`, `MaxValu
 Sau khi hoàn tất phần code C++, bạn cần thực hiện các bước cấu hình sau trong Editor để kích hoạt hệ thống:
 
 ### 1. Đăng ký Attribute trong Pawn Data
-Mở file **PawnData_Hero** (ví dụ: `DA_RPGHeroData`):
+Mở file **HeroPawnData** (ví dụ: `HeroPawnData`):
 - Tại mục **Attributes**, bấm dấu `+`.
 - Chọn Class: `RPGAttributeSet`.
 - *Việc này đảm bảo khi nhân vật sinh ra, ASC sẽ tự động tạo và quản lý bộ chỉ số này.*
 
 ### 2. Cấu hình Giá trị mặc định (RPG Game Data)
-Mở file **DA_RPGGameData**:
-- Thiết lập các giá trị khởi tạo cho Health, Mana, Stamina.
-- Các giá trị này sẽ được C++ đọc và nạp vào Attribute Set thông qua hàm khởi tạo.
 
-### 3. Thiết lập HUD Layout & Health Bar
-1. **HUD Layout**: Mở Blueprint HUD của bạn (kế thừa từ `LyraHUDLayout`).
-2. **Thêm Slot**: Thêm một `Common UI Widget Slot` hoặc kéo trực tiếp `W_healthbar` vào canvas.
-3. **Widget Binding**:
-   - Chọn `W_healthbar`.
-   - Trong bảng **Details**, tìm mục **Binding/Tag**.
-   - Gán Tag lắng nghe: `Message.Attribute.HealthChanged`.
+Hệ thống sử dụng **RPG Game Data** để quản lý các chỉ số khởi tạo toàn cục. 
 
-### 4. Tạo Gameplay Effects (GE) thực tế
-Tạo các Data Asset thuộc lớp `GameplayEffect`:
-- **GE_Heal_Instant**: Modifier = `Health`, Op = `Add`, Magnitude = `20`.
-- **GE_Damage_Over_Time**: Duration = `5.0s`, Modifier = `Health`, Op = `Add`, Magnitude = `-2`.
+**Trạng thái hiện tại:** Đã tạo và đăng ký thành công.
+
+- **Asset:** `DA_RPGGameData` (nằm trong thư mục `/Content/`).
+- **Cấu hình trong `DefaultGame.ini`:**
+  ```ini
+  [/Script/RPGRuntime.RPGAssetManager]
+  RPGGameDataPath="/Game/DA_RPGGameData.DA_RPGGameData"
+  ```
+
+**Cách chỉnh sửa chỉ số:**
+1. Mở file **DA_RPGGameData** trong Editor.
+2. Tại mục **Default Attributes**, bạn có thể thay đổi các giá trị:
+   - `Default Health`, `Default Max Health`
+   - `Default Mana`, `Default Max Mana`
+   - `Default Stamina`, `Default Max Stamina`
+3. Các giá trị này sẽ được C++ tự động nạp vào nhân vật khi sinh ra (thông qua hàm khởi tạo `RPGAttributeSet`).
+
+### 4. Cơ chế Kiểm thử (Gameplay Abilities & Input)
+
+Để xác nhận hệ thống Attribute hoạt động chính xác, chúng ta sẽ tạo một "vòng lặp kiểm thử" cho phép thay đổi máu của nhân vật thông qua phím bấm.
+
+#### A. Tạo Gameplay Abilities & Effects
+1. **GE_SelfDamage**:
+   - Class cha: `GameplayEffect`.
+   - **Duration Policy**: `Instant`.
+   - **Modifier**: Attribute: `RPGAttributeSet.Health`, Op: `Add`, Magnitude: `-5.0`.
+2. **GA_SelfDamage**:
+   - Class cha: **`RPGGameplayAbility`** (hoặc `LyraGameplayAbility`).
+   - **Logic**: `ApplyGameplayEffectToOwner(GE_SelfDamage)` -> `EndAbility`.
+   - **Activation Policy**: `OnInputTriggered`.
+3. **GE_SelfHeal / GA_SelfHeal**: Làm tương tự với Magnitude: `+5.0`.
+
+#### B. Thiết lập Input System
+1. **Input Actions**: Tạo `IA_SelfDamage` và `IA_SelfHeal` (Digital). Thêm Trigger: `Pressed`.
+2. **Input Mapping Context**: Tạo `IMC_RPGCore`, gán:
+   - `IA_SelfDamage` -> Chuột trái (Left Mouse Button).
+   - `IA_SelfHeal` -> Chuột phải (Right Mouse Button).
+3. **Input Config**: Tạo `InputData_RPG_Addons` (Cha: **`RPGInputConfig`**).
+   - Liên kết: `IA_SelfDamage` -> Tag `InputTag.SelfDamage`.
+   - Liên kết: `IA_SelfHeal` -> Tag `InputTag.SelfHeal`.
+
+#### C. Liên kết với Experience (Action Set)
+1. **Experience Action Set**: Tạo `LAS_RPG_SharedInput` (Cha: **`RPGExperienceActionSet`**).
+   - **Actions**: 
+     - `Add Input Binds`: Chọn `InputData_RPG_Addons`.
+     - `Add Input Mapping`: Chọn `IMC_RPGCore`.
+2. **RPG Experience**: Mở `RPG_Experience` (ví dụ: `B_RPGDefaultExperience`), thêm `LAS_RPG_SharedInput` vào mục **Action Sets**.
+
+#### D. Gán Abilities cho Vũ khí (Axe)
+1. **Ability Set**: Tạo `AbilitySet_Axe` (Cha: `RPGAbilitySet`).
+   - Thêm `GA_SelfDamage` -> Tag `InputTag.SelfDamage`.
+   - Thêm `GA_SelfHeal` -> Tag `InputTag.SelfHeal`.
+2. **Weapon Item Definition**: Mở `WID_Axe` (kế thừa từ **`RPGEquipmentDefinition`**):
+   - Tại mục **Equipment**, tìm mảng **Ability Sets to Grant**.
+   - Thêm `AbilitySet_Axe` vào mảng này.
+3. **Pawn Data (Tự động cầm vũ khí)**: 
+   - Mở **`DA_RPGPawnData`**.
+   - Thêm **`WID_Axe`** vào mục **Initial Equipment**.
 
 ---
 
-## ✅ Checklist Hoàn tất
-- [ ] Attribute Set đã được thêm vào **Pawn Data**.
-- [ ] Giá trị khởi tạo đã được điền trong **RPG Game Data**.
-- [ ] `W_healthbar` trong HUD đã được gán Tag Message chuẩn xác.
-- [ ] Attribute được Clamping đúng (0 - Max).
-- [ ] Thay đổi MaxHealth không làm sai lệch tỷ lệ Health hiện tại.
-- [ ] Logic Death chạy dựa trên Tag/Attribute, không dựa trên Message.
-- [ ] HUD chỉ cập nhật khi nhận được Message từ Server.
-- [ ] `showdebug abilitysystem` hiển thị đúng danh sách chỉ số.
+## ✅ Checklist Kiểm tra Attribute & Logic
+- [ ] **Pawn Data**: `RPGAttributeSet` đã được thêm vào chưa?
+- [ ] **Game Data**: Các giá trị khởi tạo đã điền trong `DA_RPGGameData` chưa?
+- [ ] **Clamping**: Khi máu về 0, nhân vật có nhận được Tag `Status.Dead` không?
+- [ ] **Input**: Bấm chuột trái/phải nhân vật có thực hiện GA và đổi màu (nếu có effect) không?
+- [ ] **Debug**: Gõ lệnh `showdebug abilitysystem` để xem các chỉ số thực tế trên Server.
 
 ---
-*Tài liệu này được tối ưu hóa cho kiến trúc Multiplayer/Standalone của Lyra.*
+## 📺 Các giai đoạn tiếp theo (Roadmap)
+1. **UI Architecture**: Xem tài liệu `RPG_Workflow_UI_Architecture.md`.
+2. **Death System**: Chi tiết quy trình tại [RPG_Workflow_Death.md](file:///f:/UnrealProject/LyraRPG/Lyra/Plugins/GameFeatures/RPG/Source/RPGRuntime/docs/Attributes/RPG_Workflow_Death.md).
+3. **Stamina System**: Hệ thống thể lực và các hành động tiêu tốn thể lực.
+

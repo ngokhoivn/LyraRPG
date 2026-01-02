@@ -144,6 +144,19 @@ void URPGHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 
 			// The player state holds the persistent data for this player.
 			PawnExtComp->InitializeAbilitySystem(RPGPS->GetRPGAbilitySystemComponent(), RPGPS);
+
+			// Grant ability sets from PawnData
+			if (PawnData)
+			{
+				for (const URPGAbilitySet* AbilitySet : PawnData->AbilitySets)
+				{
+					if (AbilitySet)
+					{
+						UE_LOG(LogRPG, Log, TEXT("Granting AbilitySet: %s to Pawn: %s"), *GetNameSafe(AbilitySet), *GetNameSafe(Pawn));
+						AbilitySet->GiveToAbilitySystem(RPGPS->GetRPGAbilitySystemComponent(), &GlobalAbilitySetHandles.AddDefaulted_GetRef(), this);
+					}
+				}
+			}
 		}
 
 		if (ARPGPlayerController* RPGPC = GetController<ARPGPlayerController>())
@@ -151,6 +164,10 @@ void URPGHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 			if (Pawn->InputComponent != nullptr)
 			{
 				InitializePlayerInput(Pawn->InputComponent);
+			}
+			else
+			{
+				UE_LOG(LogRPG, Warning, TEXT("HandleChangeInitState: Skipping InitializePlayerInput because Pawn->InputComponent is NULL!"));
 			}
 		}
 
@@ -198,25 +215,45 @@ void URPGHeroComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UnregisterInitStateFeature();
 
+	// Take back any ability sets we granted
+	if (ARPGPlayerState* RPGPS = GetPlayerState<ARPGPlayerState>())
+	{
+		if (URPGAbilitySystemComponent* RPGASC = RPGPS->GetRPGAbilitySystemComponent())
+		{
+			for (FRPGAbilitySet_GrantedHandles& Handles : GlobalAbilitySetHandles)
+			{
+				Handles.TakeFromAbilitySystem(RPGASC);
+			}
+		}
+	}
+	GlobalAbilitySetHandles.Empty();
+
 	Super::EndPlay(EndPlayReason);
 }
 
 void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
+	UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Start. InputComponent: %s"), *GetNameSafe(PlayerInputComponent));
 	check(PlayerInputComponent);
 
 	const APawn* Pawn = GetPawn<APawn>();
 	if (!Pawn)
 	{
+		UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: Pawn is NULL!"));
 		return;
 	}
 
 	const APlayerController* PC = GetController<APlayerController>();
-	check(PC);
+	if (!PC)
+	{
+		UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: PlayerController is NULL!"));
+		return;
+	}
 
 	const ULocalPlayer* LP = PC->GetLocalPlayer();
 	if (!LP)
 	{
+		UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: LocalPlayer is NULL!"));
 		return;
 	}
 
@@ -227,21 +264,22 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 
 	if (const URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 	{
-		if (const URPGPawnData* PawnData = PawnExtComp->GetPawnData<URPGPawnData>())
+		const URPGPawnData* PawnData = PawnExtComp->GetPawnData<URPGPawnData>();
+		UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: PawnData: %s"), *GetNameSafe(PawnData));
+
+		if (PawnData)
 		{
 			if (const URPGInputConfig* InputConfig = PawnData->InputConfig)
 			{
+				UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Using InputConfig: %s"), *GetNameSafe(InputConfig));
+				
 				for (const FRPGInputMappingContextAndPriority& Mapping : DefaultInputMappings)
 				{
 					if (UInputMappingContext* IMC = URPGAssetManager::GetAsset(Mapping.InputMapping))
 					{
 						Subsystem->AddMappingContext(IMC, Mapping.Priority);
+						UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Added Mapping Context: %s"), *GetNameSafe(IMC));
 					}
-				}
-
-				if (PlayerInputComponent)
-				{
-					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: InputComponent class is %s"), *GetNameSafe(PlayerInputComponent->GetClass()));
 				}
 
 				URPGInputComponent* RPGIC = Cast<URPGInputComponent>(PlayerInputComponent);
@@ -249,11 +287,12 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 
 				if (RPGIC)
 				{
-					// Add the key mappings
+					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Binding Ability Actions to URPGInputComponent"));
 					RPGIC->AddInputMappings(InputConfig, Subsystem);
 
 					TArray<uint32> BindHandles;
 					RPGIC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Bound %d Ability Actions (via URPGInputComponent)"), BindHandles.Num());
 
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ false);
 					RPGIC->BindNativeAction(InputConfig, RPGGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, /*bLogIfNotFound=*/ false);
@@ -263,27 +302,30 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 				}
 				else if (EnhancedIC)
 				{
-					UE_LOG(LogRPG, Warning, TEXT("InitializePlayerInput: InputComponent is NOT URPGInputComponent (it is %s), using resilient fallback binding."), *GetNameSafe(PlayerInputComponent->GetClass()));
-
-					// Manual binding for any EnhancedInputComponent (handles LyraInputComponent too)
+					// LOGIC FOR STANDALONE TRANSITION:
+					// This fallback allows the plugin to work with Lyra's default InputComponent classes.
+					// In a pure standalone project, this block can be removed if URPGInputComponent is strictly enforced.
+					UE_LOG(LogRPG, Warning, TEXT("InitializePlayerInput: PlayerInputComponent is NOT URPGInputComponent (it is %s). Using EnhancedInputComponent fallback."), *GetNameSafe(PlayerInputComponent->GetClass()));
+					
+					// Manual binding loop for any EnhancedInputComponent
+					int32 BoundCount = 0;
 					for (const FRPGInputAction& Action : InputConfig->AbilityInputActions)
 					{
 						if (Action.InputAction && Action.InputTag.IsValid())
 						{
 							EnhancedIC->BindAction(Action.InputAction, ETriggerEvent::Triggered, this, &ThisClass::Input_AbilityInputTagPressed, Action.InputTag);
 							EnhancedIC->BindAction(Action.InputAction, ETriggerEvent::Completed, this, &ThisClass::Input_AbilityInputTagReleased, Action.InputTag);
+							BoundCount++;
 						}
 					}
+					UE_LOG(LogRPG, Log, TEXT("InitializePlayerInput: Bound %d Ability Actions (via EnhancedInputComponent fallback)"), BoundCount);
 
+					// Helper for native binds
 					auto BindNative = [&](const FGameplayTag& Tag, auto Func)
 					{
 						if (const UInputAction* IA = InputConfig->FindNativeInputActionForTag(Tag, /*bLogNotFound=*/ false))
 						{
 							EnhancedIC->BindAction(IA, ETriggerEvent::Triggered, this, Func);
-						}
-						else
-						{
-							UE_LOG(LogRPG, Warning, TEXT("InitializePlayerInput: Skipping binding for Tag [%s] - Not found in InputConfig [%s]. This is an Asset configuration issue, not a code defect."), *Tag.ToString(), *GetNameSafe(InputConfig));
 						}
 					};
 
@@ -295,10 +337,18 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 				}
 				else
 				{
-					UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: Unexpected Input Component class %s! Cannot bind inputs."), *GetNameSafe(PlayerInputComponent->GetClass()));
+					UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: PlayerInputComponent is NOT an EnhancedInputComponent! It is: %s"), *GetNameSafe(PlayerInputComponent->GetClass()));
 				}
 			}
+			else
+			{
+				UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: InputConfig is NULL in PawnData!"));
+			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogRPG, Error, TEXT("InitializePlayerInput: PawnExtensionComponent NOT found on Pawn!"));
 	}
 
 	if (ensure(!bReadyToBindInputs))
@@ -312,38 +362,69 @@ void URPGHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 
 void URPGHeroComponent::AddAdditionalInputConfig(const URPGInputConfig* InputConfig)
 {
+	UE_LOG(LogRPG, Log, TEXT("AddAdditionalInputConfig: Entry. Config: %s"), *GetNameSafe(InputConfig));
 	TArray<uint32> BindHandles;
 
 	const APawn* Pawn = GetPawn<APawn>();
 	if (!Pawn)
 	{
+		UE_LOG(LogRPG, Warning, TEXT("AddAdditionalInputConfig: Pawn is NULL!"));
 		return;
 	}
 	
 	const APlayerController* PC = GetController<APlayerController>();
 	if (!PC)
 	{
+		UE_LOG(LogRPG, Warning, TEXT("AddAdditionalInputConfig: PlayerController is NULL!"));
 		return;
 	}
 
 	const ULocalPlayer* LP = PC->GetLocalPlayer();
 	if (!LP)
 	{
+		UE_LOG(LogRPG, Warning, TEXT("AddAdditionalInputConfig: LocalPlayer is NULL!"));
 		return;
 	}
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if (!Subsystem)
 	{
+		UE_LOG(LogRPG, Warning, TEXT("AddAdditionalInputConfig: Subsystem is NULL!"));
 		return;
 	}
 
-	if (const URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	if (InputConfig)
 	{
-		URPGInputComponent* RPGIC = Pawn->FindComponentByClass<URPGInputComponent>();
+		UE_LOG(LogRPG, Log, TEXT("AddAdditionalInputConfig: Adding config %s"), *GetNameSafe(InputConfig));
+
+		UInputComponent* PlayerInputComponent = Pawn->InputComponent;
+		if (!PlayerInputComponent)
+		{
+			UE_LOG(LogRPG, Warning, TEXT("AddAdditionalInputConfig: Pawn->InputComponent is NULL, cannot bind %s"), *GetNameSafe(InputConfig));
+			return;
+		}
+
+		URPGInputComponent* RPGIC = Cast<URPGInputComponent>(PlayerInputComponent);
+		UEnhancedInputComponent* EnhancedIC = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+
 		if (RPGIC)
 		{
 			RPGIC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+			UE_LOG(LogRPG, Log, TEXT("AddAdditionalInputConfig: Bound abilities via URPGInputComponent"));
+		}
+		else if (EnhancedIC)
+		{
+			int32 BoundCount = 0;
+			for (const FRPGInputAction& Action : InputConfig->AbilityInputActions)
+			{
+				if (Action.InputAction && Action.InputTag.IsValid())
+				{
+					EnhancedIC->BindAction(Action.InputAction, ETriggerEvent::Triggered, this, &ThisClass::Input_AbilityInputTagPressed, Action.InputTag);
+					EnhancedIC->BindAction(Action.InputAction, ETriggerEvent::Completed, this, &ThisClass::Input_AbilityInputTagReleased, Action.InputTag);
+					BoundCount++;
+				}
+			}
+			UE_LOG(LogRPG, Log, TEXT("AddAdditionalInputConfig: Bound %d abilities via %s fallback"), BoundCount, *GetNameSafe(PlayerInputComponent->GetClass()));
 		}
 	}
 }
@@ -359,6 +440,7 @@ bool URPGHeroComponent::IsReadyToBindInputs() const
 
 void URPGHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
+	UE_LOG(LogRPG, Log, TEXT("Input_AbilityInputTagPressed: Tag: %s"), *InputTag.ToString());
 	if (const APawn* Pawn = GetPawn<APawn>())
 	{
 		if (const URPGPawnExtensionComponent* PawnExtComp = URPGPawnExtensionComponent::FindPawnExtensionComponent(Pawn))

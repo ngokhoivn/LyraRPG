@@ -9,7 +9,10 @@
 #include "System/RPGGameplayTags.h"
 #include "System/RPGLogChannels.h"
 #include "Character/RPGPawnData.h"
+#include "Equipment/RPGEquipmentManagerComponent.h"
+#include "Equipment/RPGEquipmentDefinition.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/RPGPlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RPGPawnExtensionComponent)
 
@@ -143,6 +146,26 @@ void URPGPawnExtensionComponent::InitializeAbilitySystem(URPGAbilitySystemCompon
 	if (ensure(PawnData))
 	{
 		InASC->SetTagRelationshipMapping(PawnData->TagRelationshipMapping);
+
+		for (const TSubclassOf<UAttributeSet>& AttributeSetClass : PawnData->Attributes)
+		{
+			InASC->GetOrCreateAttributeSet(AttributeSetClass);
+		}
+
+		// Grant initial equipment
+		URPGEquipmentManagerComponent* EquipmentManager = Pawn->FindComponentByClass<URPGEquipmentManagerComponent>();
+		if (EquipmentManager)
+		{
+			UE_LOG(LogRPG, Log, TEXT("InitializeAbilitySystem: Granting %d initial equipment items."), PawnData->InitialEquipment.Num());
+			for (const TSubclassOf<URPGEquipmentDefinition>& EquipmentDef : PawnData->InitialEquipment)
+			{
+				EquipmentManager->EquipItem(EquipmentDef);
+			}
+		}
+		else
+		{
+			UE_LOG(LogRPG, Warning, TEXT("InitializeAbilitySystem: FAILED to grant initial equipment! URPGEquipmentManagerComponent NOT FOUND on pawn %s."), *GetNameSafe(Pawn));
+		}
 	}
 
 	OnAbilitySystemInitialized.Broadcast();
@@ -213,6 +236,18 @@ void URPGPawnExtensionComponent::CheckDefaultInitialization()
 {
 	// Before checking our progress, try progressing any other features we might depend on
 	CheckDefaultInitializationForImplementers();
+
+	APawn* Pawn = GetPawn<APawn>();
+	if (!PawnData && Pawn)
+	{
+		if (ARPGPlayerState* PS = Cast<ARPGPlayerState>(Pawn->GetPlayerState()))
+		{
+			if (const URPGPawnData* PSData = PS->GetPawnData<URPGPawnData>())
+			{
+				PawnData = PSData;
+			}
+		}
+	}
 
 	static const TArray<FGameplayTag> StateChain = { RPGGameplayTags::InitState_Spawned, RPGGameplayTags::InitState_DataAvailable, RPGGameplayTags::InitState_DataInitialized, RPGGameplayTags::InitState_GameplayReady };
 
