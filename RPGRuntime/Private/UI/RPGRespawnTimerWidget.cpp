@@ -103,7 +103,9 @@ void URPGRespawnTimerWidget::UpdateCountdown()
 
 	if (FillGlow && TotalRespawnDuration > 0.0f)
 	{
-		const float Percent = FMath::Clamp(1.0f - (TimeRemaining / TotalRespawnDuration), 0.0f, 1.0f);
+		float Percent = FMath::Clamp(1.0f - (TimeRemaining / TotalRespawnDuration), 0.0f, 1.0f);
+		Percent = FMath::Clamp(Percent * ArcFillScale, 0.0f, 1.0f);
+		
 		FillGlow->GetDynamicMaterial()->SetScalarParameterValue(TEXT("AnimateArcFill"), Percent);
 	}
 

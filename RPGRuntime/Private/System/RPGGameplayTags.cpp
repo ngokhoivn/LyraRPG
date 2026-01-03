@@ -46,9 +46,14 @@ void FRPGGameplayTags::InitializeNativeTags()
 	GameplayTags.Status_Death = RPGGameplayTags::Status_Death;
 	GameplayTags.Status_Death_Dying = RPGGameplayTags::Status_Death_Dying;
 	GameplayTags.Status_Death_Dead = RPGGameplayTags::Status_Death_Dead;
+	GameplayTags.Status_Movement_Moving = RPGGameplayTags::Status_Movement_Moving;
+	GameplayTags.Status_Movement_Idle = RPGGameplayTags::Status_Movement_Idle;
+	GameplayTags.Status_Action_Combo = RPGGameplayTags::Status_Action_Combo;
 
 	// Gameplay Events
 	GameplayTags.GameplayEvent_Death = RPGGameplayTags::GameplayEvent_Death;
+	GameplayTags.GameplayEvent_Combo_Transition = RPGGameplayTags::GameplayEvent_Combo_Transition;
+	GameplayTags.GameplayEvent_Combo_Damage = RPGGameplayTags::GameplayEvent_Combo_Damage;
 
 	// Map members to namespace tags for backward compatibility
 	GameplayTags.InitState_Spawned = RPGGameplayTags::InitState_Spawned;
@@ -116,6 +121,13 @@ namespace RPGGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Death, "Status.Death", "Target has the death status.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Death_Dying, "Status.Death.Dying", "Target has begun the death process.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Death_Dead, "Status.Death.Dead", "Target has finished the death process.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Movement_Moving, "Status.Movement.Moving", "Target is actively moving.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Movement_Idle, "Status.Movement.Idle", "Target is standing still.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Action_Combo, "Status.Action.Combo", "Target is performing a combo action.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(GameplayEvent_Combo_Transition, "Event.Combo.Transition", "Event sent by animation to trigger a combo transition.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(GameplayEvent_Combo_Damage, "Event.Combo.Damage", "Event sent by animation to trigger damage checking.");
 						  
 	// These are mapped to the movement modes inside GetMovementModeTagMap()
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Movement_Mode_Walking, "Movement.Mode.Walking", "Default Character movement tag");

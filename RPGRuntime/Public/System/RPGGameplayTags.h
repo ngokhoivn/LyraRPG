@@ -54,8 +54,17 @@ public:
 	FGameplayTag Status_Death_Dying;
 	FGameplayTag Status_Death_Dead;
 
+	// Movement Status Tags
+	FGameplayTag Status_Movement_Moving;
+	FGameplayTag Status_Movement_Idle;
+
+	// Action Status Tags
+	FGameplayTag Status_Action_Combo;
+
 	// Gameplay Event Tags
 	FGameplayTag GameplayEvent_Death;
+	FGameplayTag GameplayEvent_Combo_Transition;
+	FGameplayTag GameplayEvent_Combo_Damage;
 
 	// Init State Tags
 	FGameplayTag InitState_Spawned;
@@ -130,6 +139,15 @@ namespace RPGGameplayTags
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death);
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death_Dying);
 	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death_Dead);
+
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Movement_Moving);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Movement_Idle);
+
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Action_Combo);
+
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayEvent_Death);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayEvent_Combo_Transition);
+	RPGRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayEvent_Combo_Damage);
 
 	// These are mappings from MovementMode enums to GameplayTags associated with those enums (below)
 	RPGRUNTIME_API extern const TMap<uint8, FGameplayTag> MovementModeTagMap;

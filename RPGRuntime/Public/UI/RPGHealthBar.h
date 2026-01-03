@@ -82,7 +82,13 @@ protected:
 	bool bIsAnimating = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Health Bar")
-	float VisualInterpSpeed = 12.0f;
+	float VisualInterpSpeed = 6.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Health Bar")
+	float AnimationDelay = 0.5f;
+
+	float CurrentAnimationWaitTimer = 0.0f;
+	float CurrentDamageOrHealingState = -1.0f; // -1.0 for damage, 1.0 for healing
 
 protected:
 	/* =========================
@@ -103,4 +109,5 @@ protected:
 	 * ========================= */
 	static const FName Param_HealthCurrent;
 	static const FName Param_HealthUpdated;
+	static const FName Param_DamageOrHealing;
 };

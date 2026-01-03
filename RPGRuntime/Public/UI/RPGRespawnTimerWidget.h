@@ -57,4 +57,7 @@ private:
 	
 	float TargetRespawnTime = 0.0f;
 	float TotalRespawnDuration = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Respawn|UI")
+	float ArcFillScale = 2.0f;
 };

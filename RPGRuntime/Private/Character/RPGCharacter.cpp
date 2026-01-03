@@ -29,9 +29,9 @@ static FName NAME_RPGCharacterCollisionProfile_Mesh(TEXT("RPGPawnMesh"));
 ARPGCharacter::ARPGCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<URPGCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	// Avoid ticking characters if possible.
-	PrimaryActorTick.bCanEverTick = false;
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	// Enable tick to monitor movement for Stamina system
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	SetNetCullDistanceSquared(900000000.0f);
 
@@ -87,6 +87,13 @@ void ARPGCharacter::PreInitializeComponents()
 void ARPGCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ARPGCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	UpdateMovementStateTags();
 }
 
 void ARPGCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -329,7 +336,38 @@ void ARPGCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 
 
 void ARPGCharacter::SetMovementModeTag(EMovementMode MovementMode, uint8 CustomMovementMode, bool bTagEnabled)
 {
-	// Stub: This usually interacts with FRPGGameplayTags which is not yet fully standaloned in terms of movement maps
+	if (URPGAbilitySystemComponent* RPGASC = GetRPGAbilitySystemComponent())
+	{
+		const FRPGGameplayTags& GameplayTags = FRPGGameplayTags::Get();
+		const FGameplayTag* TagPtr = RPGGameplayTags::MovementModeTagMap.Find(MovementMode);
+
+		if (TagPtr && TagPtr->IsValid())
+		{
+			RPGASC->SetLooseGameplayTagCount(*TagPtr, (bTagEnabled ? 1 : 0));
+		}
+
+		if (MovementMode == MOVE_Custom)
+		{
+			const FGameplayTag* CustomTagPtr = RPGGameplayTags::CustomMovementModeTagMap.Find(CustomMovementMode);
+			if (CustomTagPtr && CustomTagPtr->IsValid())
+			{
+				RPGASC->SetLooseGameplayTagCount(*CustomTagPtr, (bTagEnabled ? 1 : 0));
+			}
+		}
+	}
+}
+
+void ARPGCharacter::UpdateMovementStateTags()
+{
+	if (URPGAbilitySystemComponent* RPGASC = GetRPGAbilitySystemComponent())
+	{
+		const FRPGGameplayTags& GameplayTags = FRPGGameplayTags::Get();
+		const FVector Velocity = GetVelocity();
+		const bool bIsMoving = !Velocity.IsNearlyZero(0.1f);
+
+		RPGASC->SetLooseGameplayTagCount(GameplayTags.Status_Movement_Moving, (bIsMoving ? 1 : 0));
+		RPGASC->SetLooseGameplayTagCount(GameplayTags.Status_Movement_Idle, (bIsMoving ? 0 : 1));
+	}
 }
 
 void ARPGCharacter::ToggleCrouch()
